@@ -1,0 +1,127 @@
+\documentclass[12pt]{article}
+\usepackage{paralist,amsmath,amssymb,thumbpdf,lmodern}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{physics}
+\usepackage{amsfonts}
+\usepackage{bbm}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{amsfonts}
+\usepackage{booktabs}
+\usepackage{diagbox}
+\usepackage[outdir=./]{epstopdf}
+\usepackage{caption}
+\usepackage{bm}
+\usepackage{makecell}
+\usepackage{ifxetex,ifluatex}
+\newcommand*\diff{\mathop{}\!\mathrm{d}}
+\begingroup\expandafter\expandafter\expandafter\endgroup
+\expandafter\ifx\csname IncludeInRelease\endcsname\relax
+  \usepackage{fixltx2e}
+\fi
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provides euro and other symbols
+\else % if luatex or xelatex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\usepackage{newtxtext,newtxmath}
+
+\title{Biostat 830 HW1}
+\date{}
+\author{Mukai Wang 98830336}
+
+\makeatletter
+\newenvironment{breakablealgorithm}
+{% \begin{breakablealgorithm}
+		\begin{center}
+			\refstepcounter{algorithm}% New algorithm
+			\hrule height.8pt depth0pt \kern2pt% \@fs@pre for \@fs@ruled
+			\renewcommand{\caption}[2][\relax]{% Make a new \caption
+				{\raggedright\textbf{\fname@algorithm~\thealgorithm} ##2\par}%
+				\ifx\relax##1\relax % #1 is \relax
+				\addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##2}%
+				\else % #1 is not \relax
+				\addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##1}%
+				\fi
+				\kern2pt\hrule\kern2pt
+			}
+		}{% \end{breakablealgorithm}
+		\kern2pt\hrule\relax% \@fs@post for \@fs@ruled
+	\end{center}
+}
+\makeatother
+
+
+\begin{document}
+\maketitle
+
+\section*{Problem 1}
+
+ The \href{https://uasdata.usc.edu/index.php}{Understanding Coronavirus in America} conducted by University of Southern California(\href{https://uasdata.usc.edu/index.php}{USC}) followed up with a group of LA county citizens from Apr 2020 to July 2021 and collected longitudinal responses regarding their financial status and mental health conditions. We are interested in answering if their responses were correlated with the severity of pandemic in the same area. We will fit compartmental models(e.g. SIR, SEIR) to the pandemic incidence data(\href{https://data.cdc.gov/browse?q=COVID-19&sortBy=relevance}{national} and/or \href{https://data.ca.gov/group/covid-19}{state} level) and use the time varying infection rate to represent the severity of pandemic. Interaction between severity and individual demographics(age, gender) will be examined as well.
+
+\section*{Problem 2}
+
+The SEIR model is
+
+\begin{align*}
+	\frac{\diff S}{\diff t} &= -\beta S \frac{I}{N}\\
+	\frac{\diff E}{\diff t} &= \beta S \frac{I}{N} - \delta E\\\
+	\frac{\diff I}{\diff t} &= \delta E - \gamma I\\
+	\frac{\diff R}{\diff t} &= \gamma I
+\end{align*}
+
+Because on average, an individual takes three days to begin shedding, $\delta = \frac{1}{3} \text{day}^{-1}$. Because a symptomatic individual takes on average two weeks to recover, $\gamma = \frac{1}{14} \text{day}^{-1}$. Given the definition $R_{0} = \frac{\beta}{\gamma}$, $\beta = \frac{5}{14}, \frac{5}{7}, \frac{15}{14}$ when $R_{0} = 5, 10, 15$.
+Based in the initial condition $S=1\times 10^6$, $E=0$, $I=30$ and $R=0$, I plot the trajectory of the four compartments and the effective reproduction number for half a year/ a full year. The plots are in Figure \ref{Q2traj}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=0.8]{Q2traj.pdf}
+	\caption{The trajectory of susceptible population, exposed population, infectious population and recovered population through half a year from the initial condition $R_{0} = \frac{\beta}{\gamma}$, $\beta = \frac{5}{14}, \frac{5}{7}, \frac{15}{14}$. The rate from $E$ to $I$ is fixed at $\delta=\frac{1}{3} \text{day}^{-1}$. The rate from $I$ to $R$ is fixed at $\delta=\frac{1}{14} \text{day}^{-1}$. We compare $R_0=5, 10, 15$}\label{Q2traj}
+\end{figure}
+
+The model itself has limitations such as:
+\begin{itemize}
+	\item We assume that the total population remains constant throughout one year(no births and no deaths)
+	\item We assume that no one is in the $E$ and $R$ compartment at the beginning. No one is immune to the infectious disease.
+	\item We assume that the disease dynamics is deterministic and that no one will catch the disease twice.
+	\item We assume that everybody has the same rate of catching and recovering from the disease.
+\end{itemize}
+
+The higher the basic reproduction number is, the faster the infectious population will reach the peak. The peak will also be higher when the basic reproduction number is larger.
+
+\section*{Problem 3}
+
+If I denote the extant population that a susceptible individual can meet as $N = S+E+I+R+V+A$, then we have
+
+\begin{align*}
+	\frac{\diff S}{\diff t} &= -\delta S \frac{I}{N} - \nu S + \tau A\\
+	\frac{\diff E}{\diff t} &= \delta S \frac{I}{N} - \beta E\\
+	\frac{\diff I}{\diff t} &= \beta E - (\eta + \gamma_{R1})I \\
+	\frac{\diff H}{\diff t} &= \eta I-(\gamma_{D}+\gamma_{R2})H \\
+	\frac{\diff D}{\diff t} &= \gamma_{D} H\\
+	\frac{\diff R}{\diff t} &= \gamma_{R1} I + \gamma_{R2} H - \rho R\\
+	\frac{\diff V}{\diff t} &= \nu S - \alpha V\\
+	\frac{\diff A}{\diff t} &= \alpha V+\rho R - \tau A
+\end{align*}
+
+
+
+\end{document}

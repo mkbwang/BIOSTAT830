@@ -1,0 +1,65 @@
+\documentclass[12pt]{article}
+\usepackage{paralist,amsmath,amssymb,thumbpdf,lmodern}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{physics}
+\usepackage{amsfonts}
+\usepackage{bbm}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{amsfonts}
+\usepackage{booktabs}
+\usepackage{diagbox}
+\usepackage[outdir=./]{epstopdf}
+\usepackage{caption}
+\usepackage{bm}
+\usepackage{makecell}
+\usepackage{ifxetex,ifluatex}
+\newcommand*\diff{\mathop{}\!\mathrm{d}}
+\begingroup\expandafter\expandafter\expandafter\endgroup
+\expandafter\ifx\csname IncludeInRelease\endcsname\relax
+  \usepackage{fixltx2e}
+\fi
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provides euro and other symbols
+\else % if luatex or xelatex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\usepackage{newtxtext,newtxmath}
+
+
+\title{Data Analysis Plan for BIOSTAT 830 \emph{Infectious Disease Modeling} Project at University of Michigan }
+\date{}
+\author{Mukai Wang}
+
+\begin{document}
+\maketitle
+
+I plan to model the relationship between the severity of the pandemic and people's mental and financial state throughout the past two years. The \href{https://uasdata.usc.edu/index.php}{UAS Los Angeles County survey data} provides longitudinal responses from April 2020 to July 2021 such as 
+\begin{itemize}
+\item Over the last 7 days, how often have you been bothered by not being able to stop or control worrying?
+\item In the past seven days, did you eat less than you thought you should because of a lack of money or other
+resources?
+\end{itemize}
+The responses to these questions are good indicators of mental and financial status. I plan to use compartmental models(e.g. SIR, SEIR) to the pandemic incidence data(\href{https://data.cdc.gov/browse?q=COVID-19&sortBy=relevance}{national} and/or \href{https://data.ca.gov/group/covid-19}{state} level) and use the time varying infection rate/recovery rate to represent the severity of pandemic. When I examine the effect of pandemic severity, I will adjust for the demographic parameters(age, gender etc) collected in the survey.
+
+The data will be stored on \href{https://its.umich.edu/communication/collaboration/dropbox}{Dropbox} provided by University of Michigan. Dropbox complies with the data storage requirement of UAS survey data(\href{https://safecomputing.umich.edu/dataguide/?q=node/251}{link}). The deliverable of this project is currently planned to be presented in class only. I will notify USC Center for Economic and Social Research if I plan to publish the findings to a bigger audience.
+
+\end{document}
