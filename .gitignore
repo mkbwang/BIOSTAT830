@@ -8,3 +8,6 @@
 .Rproj.user
 *.Rproj
 .Rhistory
+*.xlsx
+*.csv
+
