@@ -30,12 +30,32 @@ michigan_death_weekly_df <- list(Date = michigan_deaths_aggregate_subset$Date[2:
   as.data.frame()
 
 
-write.csv(michigan_death_weekly_df,
+# use national data to approximate the deaths in different subpopulation
+michigan_detailed_deaths <- national_deaths_subset %>%
+  filter(End.Week %in% michigan_death_weekly_df$Date) %>%
+  select(End.Week, Sex, Age.Group, COVID.19.Deaths)
+
+michigan_detailed_totaldeaths <- michigan_detailed_deaths %>%
+  filter(Sex == "All Sex" & Age.Group=="All Ages")
+
+ratio <- michigan_death_weekly_df$Counts / michigan_detailed_totaldeaths$COVID.19.Deaths
+michigan_detailed_deaths$ratio <- rep(ratio, each=4752/132)
+michigan_detailed_deaths$covid <- round(michigan_detailed_deaths$COVID.19.Deaths*
+  michigan_detailed_deaths$ratio)
+michigan_detailed_deaths$COVID.19.Deaths <- NULL
+
+
+write.csv(michigan_detailed_deaths,
           file.path('HW2', 'michigan_deaths_by_week.csv'),
           row.names = FALSE)
 
 
 
 vaccines <- read.csv(file.path('HW2', 'Provisional_Vaccine.csv'))
+vaccines_subset <- vaccines[, c(1,2, 3, seq(31, 50))] %>%
+  filter(Location == 'MI')
 
+write.csv(vaccines_subset,
+          file.path('HW2', 'michigan_vaccines.csv'),
+          row.names = FALSE)
 
