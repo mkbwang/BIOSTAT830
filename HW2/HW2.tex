@@ -1,0 +1,102 @@
+\documentclass[12pt]{article}
+\usepackage{paralist,amsmath,amssymb,thumbpdf,lmodern}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{physics}
+\usepackage{amsfonts}
+\usepackage{bbm}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{amsfonts}
+\usepackage{booktabs}
+\usepackage{diagbox}
+\usepackage[outdir=./]{epstopdf}
+\usepackage{caption}
+\usepackage{bm}
+\usepackage{makecell}
+\usepackage{ifxetex,ifluatex}
+\newcommand*\diff{\mathop{}\!\mathrm{d}}
+\begingroup\expandafter\expandafter\expandafter\endgroup
+\expandafter\ifx\csname IncludeInRelease\endcsname\relax
+  \usepackage{fixltx2e}
+\fi
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provides euro and other symbols
+\else % if luatex or xelatex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\usepackage{newtxtext,newtxmath}
+
+\title{Biostat 830 HW2}
+\date{}
+\author{Mukai Wang 98830336}
+
+\makeatletter
+\newenvironment{breakablealgorithm}
+{% \begin{breakablealgorithm}
+		\begin{center}
+			\refstepcounter{algorithm}% New algorithm
+			\hrule height.8pt depth0pt \kern2pt% \@fs@pre for \@fs@ruled
+			\renewcommand{\caption}[2][\relax]{% Make a new \caption
+				{\raggedright\textbf{\fname@algorithm~\thealgorithm} ##2\par}%
+				\ifx\relax##1\relax % #1 is \relax
+				\addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##2}%
+				\else % #1 is not \relax
+				\addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##1}%
+				\fi
+				\kern2pt\hrule\kern2pt
+			}
+		}{% \end{breakablealgorithm}
+		\kern2pt\hrule\relax% \@fs@post for \@fs@ruled
+	\end{center}
+}
+\makeatother
+
+
+\begin{document}
+\maketitle
+
+\section*{Problem 1}
+
+ 
+
+\section*{Problem 2}
+\emph{Note: Because the provisional weekly COVID-19 deaths by age and sex are only available on \href{https://data.cdc.gov/NCHS/Provisional-COVID-19-Deaths-by-Week-Sex-and-Age/vsak-wrfu}{national level}, I also referred to the weekly aggregated death counts of Michigan from \href{https://www.michigan.gov/coronavirus/-/media/Project/Websites/coronavirus/Michigan-Data/10-04-2022/Datasets/Cases-and-Deaths-by-County-and-by-Date-of-Symptom-Onset-or-by-Date-of-Death2022-10-04.xlsx?rev=d9568cd19a45423aac6c03af0ce87707&hash=EF2BBF61BD1BFFB0E9F20527E91DCC47}{the state government}. The state level death counts by age groups and sex groups are estimated based on state level totals and national level proportions.}  
+\begin{enumerate}[(a)]
+	\item From the weekly death count time series plot(Figure \ref{weekdeath}), I can notice that death events peaked at four time points for people of all age groups and sex groups. They are April to May 2020(beginning of pandemic), December 2020 to January 2021(the first winter), May 2021(the second spring) and December 2021 to January 2022(the second winter). In panel A, I plot the death trends by three age groups(0-14, 15-64, >65). There were virtually no death cases for the youngest age group. Death counts from the oldest age group have been consistently higher than the other two age groups, and were considerably higher during the four severe periods. There hasn't been significant differences between male and female in terms of death cases throughout the past two years. The death counts of males were slightly higher than females during the four severe periods.
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[scale=0.7]{DeathTrajectory.pdf}
+		\caption{Weekly Death Count Trends by Age Group(A) and Sex Group(B)}\label{weekdeath}
+	\end{figure} 
+	
+	\item The vaccination data is provided for four age groups(5-11, 12-17, 18-64, 65+). The emergency use authorization by CDC were given for these different age groups on different dates. Adults between 18-64 began vaccination on 2/13/2021. Elderly people older than 65 began vaccination on 3/5/2021. Adolescents between 12 and 18 began vaccination on 5/13/2021. Children between 5 and 12 began vaccination on 11/3/2021. According to Figure \ref{vaccinationplot}A, the proportion of population that had at least one dose rose quickly at the beginning and later plateaued for population of all ages. The oldest population had the highest one-dose vaccination rate, followed by adults, teenagers and children.
+	
+	\item According to Figure \ref{vaccinationplot}B, the trend for the fully vaccinated is the basically the same as those with at least one dose. The only difference is that the full vaccination rate is slightly lower than the one-dose vaccination rate by about 5\% for all age groups by the end of September 2022.
+\end{enumerate}
+
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[scale=0.7]{vaccination.pdf}
+		\caption{The proportion of population with at least one dose of vaccination(A) and the proportion of fully vaccinated population(B)}\label{vaccinationplot}
+	\end{figure}
+	
+
+\end{document}

@@ -1,5 +1,6 @@
 library(ggplot2)
 library(dplyr)
+library(reshape2)
 library(cowplot)
 
 rm(list=ls())
@@ -61,3 +62,37 @@ death_plot <- plot_grid(age_trajectory, sex_trajectory,
 
 
 # michigan population: https://www.census.gov/quickfacts/MI
+
+
+michigan_vaccines$Date <- as.Date(michigan_vaccines$Date,
+                                  format="%m/%d/%Y")
+
+michigan_vaccines <- michigan_vaccines[order(michigan_vaccines$Date), ]
+onedose_columns <- sprintf("Administered_Dose1_Recip_%dPlusPop_Pct",
+                           c(5, 12, 18, 65))
+onedose <- michigan_vaccines[, c("Date", onedose_columns)]
+colnames(onedose) <- c("Date", "5Plus", "12Plus", "18Plus", "65Plus")
+onedose_long <- melt(onedose, id.vars="Date", variable.name="Age_Group", value.name="Percentage") %>%
+  na.omit()
+onedose_long$Category <- "One Dose"
+onedose_plot <- ggplot(onedose_long, aes(x=Date, y=Percentage, color=Age_Group)) +
+  geom_path(size=0.8, alpha=0.6) +
+  scale_color_manual(values=c('#003300', '#996633', '#003399', '#9900cc')) +
+  xlab("Date") + ylab("One Dose Proportion") +theme_bw()+ylim(0, 101)
+
+
+
+complete_columns <- sprintf("Series_Complete_%dPlusPop_Pct",
+                            c(5, 12, 18, 65))
+complete <- michigan_vaccines[, c("Date", complete_columns)]
+colnames(complete) <- c("Date", "5Plus", "12Plus", "18Plus", "65Plus")
+complete_long <- melt(complete, id.vars="Date", variable.name="Age_Group",
+                      value.name="Percentage") %>% na.omit()
+
+complete_plot <- ggplot(complete_long, aes(x=Date, y=Percentage, color=Age_Group)) +
+  geom_path(size=0.8, alpha=0.6) +
+  scale_color_manual(values=c('#003300', '#996633', '#003399', '#9900cc')) +
+  xlab("Date") + ylab("Full Vaccination Proportion") +theme_bw()+ylim(0, 101)
+
+vaccination_plot <- plot_grid(onedose_plot, complete_plot, align="v",
+                              labels="AUTO", nrow=2)
