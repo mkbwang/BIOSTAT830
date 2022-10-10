@@ -111,13 +111,31 @@
 	\item The vaccination data is provided for four age groups(5-11, 12-17, 18-64, 65+). The emergency use authorization by CDC were given for these different age groups on different dates. Adults between 18-64 began vaccination on 2/13/2021. Elderly people older than 65 began vaccination on 3/5/2021. Adolescents between 12 and 18 began vaccination on 5/13/2021. Children between 5 and 12 began vaccination on 11/3/2021. According to Figure \ref{vaccinationplot}A, the proportion of population that had at least one dose rose quickly at the beginning and later plateaued for population of all ages. The oldest population had the highest one-dose vaccination rate, followed by adults, teenagers and children.
 	
 	\item According to Figure \ref{vaccinationplot}B, the trend for the fully vaccinated is the basically the same as those with at least one dose. The only difference is that the full vaccination rate is slightly lower than the one-dose vaccination rate by about 5\% for all age groups by the end of September 2022.
-\end{enumerate}
-
+	
 	\begin{figure}[htbp]
 		\centering
 		\includegraphics[scale=0.7]{vaccination.pdf}
 		\caption{The proportion of population with at least one dose of vaccination(A) and the proportion of fully vaccinated population(B)}\label{vaccinationplot}
 	\end{figure}
+\end{enumerate}
+
+
+\section*{Problem 3}
+
+\begin{enumerate}[(a)]
+	\item We notice that there are barely any death cases for children younger than 14, therefore we only compare people of age 15-64 and people older than 65. We first fit a Poisson regression on the weekly death counts across 132 weeks. The Poisson model with log link is parameterized as
+	\begin{align*}
+		\log(\frac{\mathbb{E}[n_{i0}]}{N_{0}}) &= f(t_{i})\\
+		\log(\frac{\mathbb{E}[n_{i1}]}{N_{1}}) &= f(t_{i})+\beta
+	\end{align*}
+	$n_{i0}$ is the death count of people aged between 15 and 64 in week $t_{i}$ ($i=1,2,\cdots 132$). $n_{i1}$ is the death count of people older than 65. $N_{0}$ is the total population aged between 15 and 64 in Michigan. $N_{1}$ is the total population older than 65. According to \href{https://www.census.gov/quickfacts/MI}{census bureau data}, $N_{0}\approx 6.08$ million and $N_{1}\approx 1.82$ million. $f(t_{i})$ is a smoothed spline estimate of the expected death rate for population between 15-64. Constant $\beta$ represents the difference in death rates between people older than 65 and people between 15-64 years old. $\beta$ is the parameter of interest. I used the generalized additive model for estimation. The dimension of basis of $f(\cdot)$ was set to be 20 to adequately capture the death rate fluctuation. $\hat{\beta} = 2.307$ and $\text{SE}(\hat{\beta}) = 0.012$. The p value was smaller than $2\times 10^{-16}$, indicating that age is a significant risk factor. The death rate of senior people is about $\exp(2.3) = 10$ times the death rate of people between 15 and 64. 
+	\item In the previous question, $\text{deviance}/\text{df}=2724/243=11.2 > 1$, indicating that overdispersion exists in the data. We use negative binomial regression instead of Poisson regression, which means the variance $V(n_{i0}) = \mathbb{E}[n_{i0}] +\mathbb{E}^{2}[n_{i0}]/\theta$. Under the new setting, $\hat{\beta} = 2.345$ and  $\text{SE}(\hat{\beta}) = 0.042$. The significance conclusion doesn't change but $\text{deviance}/\text{df}=266/243=1.09$ is much smaller than that of Poisson regression. $\hat{\theta}=9.88$.
 	
+	\item We separate the last two years into five periods
+\end{enumerate}
+
+
+
+
 
 \end{document}
