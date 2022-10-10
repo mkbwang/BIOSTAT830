@@ -75,6 +75,27 @@
 
 \section*{Problem 1}
 
+\begin{enumerate}[(a)]
+	\item Since $Y\sim \text{Poisson}(\mu)$ and $\mu \sim \text{Gamma}(\kappa, \theta)$, 
+	\begin{align*}
+	P\left(\left.Y \right\vert\mu \right)& = \frac{e^{-\mu} \mu^{Y}}{Y!}\\
+	\pi\left(\left.\mu \right\vert \kappa, \theta\right) &= \frac{\theta^{\kappa}}{\Gamma(\kappa)}\mu^{\kappa - 1}e^{-\theta\mu}\diff \mu 
+	\end{align*}
+	Therefore the marginal distribution of $Y$ is
+	\begin{align*}
+		\pi\left(\left.Y\right\vert\kappa, \theta \right)&= \int_{0}^{\infty} P\left(\left.Y \right\vert\mu \right) \pi\left(\left.\mu \right\vert \kappa, \theta\right)\diff \mu\\
+		&=\frac{\theta^{\kappa}}{Y!\cdot \Gamma(\kappa)}\cdot \int_{0}^{\infty}e^{-(1+\theta)\mu} \cdot \mu^{Y+K-1}\diff \mu \\
+		&=\frac{\theta^{\kappa} \Gamma(Y+\kappa)}{Y! \cdot \Gamma(\kappa) \left(1+\theta\right)^{Y+\kappa} }\cdot \int_{0}^{\infty} \frac{(1+\theta)^{Y+\kappa}}{\Gamma(Y+\kappa)}e^{-(1+\theta)\mu}\mu^{Y+K-1}\diff \mu\\
+		&=\begin{pmatrix}Y+\kappa - 1 \\ Y\end{pmatrix}\left(\frac{1}{1+\theta}\right)^{Y}\left(\frac{\theta}{1+\theta}\right)^{\kappa}
+	\end{align*}
+	If we consider $\kappa$ to be an integer, then we have $Y \sim \text{NegBin}(\kappa, 1/(1+\theta))$.
+	\item Given that the marginal distribution is a negative binomial distribution, then we have the expectation and variance to be
+	\begin{align*}
+		\mathbb{E}[Y] &= \kappa\theta\\
+		\text{Var}(Y) &= \kappa\theta(1+\theta)
+	\end{align*}
+	\item The scale parameter of the Gamma distribution $\theta$ dictates the overdispersion.
+\end{enumerate}
  
 
 \section*{Problem 2}
