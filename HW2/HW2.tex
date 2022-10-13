@@ -94,7 +94,12 @@
 		\mathbb{E}[Y] &= \kappa\theta\\
 		\text{Var}(Y) &= \kappa\theta(1+\theta)
 	\end{align*}
-	\item The scale parameter of the Gamma distribution $\theta$ dictates the overdispersion.
+	\item We can reparameterize the expression s of expectation and variance to be
+	\begin{align*}
+		\mathbb{E}[Y] &= \mu \\
+		\text{Var}(Y) &= \mu(1+\sigma^2 \mu)
+	\end{align*}
+	in which $\mu = \kappa\theta$ and $\sigma^2 = 1/\kappa$. We can tell that the shape parameter of the gamma distribution dictates the overdispersion. A suitable null hypothesis is $H_{0} : \sigma^2 = 0$
 \end{enumerate}
  
 
@@ -125,13 +130,18 @@
 \begin{enumerate}[(a)]
 	\item We notice that there are barely any death cases for children younger than 14, therefore we only compare people of age 15-64 and people older than 65. We first fit a Poisson regression on the weekly death counts across 132 weeks. The Poisson model with log link is parameterized as
 	\begin{align*}
-		\log(\frac{\mathbb{E}[n_{i0}]}{N_{0}}) &= f(t_{i})\\
-		\log(\frac{\mathbb{E}[n_{i1}]}{N_{1}}) &= f(t_{i})+\beta
+		\log(\frac{\mathbb{E}[n_{i0}]}{N_{0}}) &= \beta_{0} + \alpha t_{i}\\
+		\log(\frac{\mathbb{E}[n_{i1}]}{N_{1}}) &= \beta_{0} + \alpha t_{i} + \beta_{1}
 	\end{align*}
-	$n_{i0}$ is the death count of people aged between 15 and 64 in week $t_{i}$ ($i=1,2,\cdots 132$). $n_{i1}$ is the death count of people older than 65. $N_{0}$ is the total population aged between 15 and 64 in Michigan. $N_{1}$ is the total population older than 65. According to \href{https://www.census.gov/quickfacts/MI}{census bureau data}, $N_{0}\approx 6.08$ million and $N_{1}\approx 1.82$ million. $f(t_{i})$ is a smoothed spline estimate of the expected death rate for population between 15-64. Constant $\beta$ represents the difference in death rates between people older than 65 and people between 15-64 years old. $\beta$ is the parameter of interest. I used the generalized additive model for estimation. The dimension of basis of $f(\cdot)$ was set to be 20 to adequately capture the death rate fluctuation. $\hat{\beta} = 2.307$ and $\text{SE}(\hat{\beta}) = 0.012$. The p value was smaller than $2\times 10^{-16}$, indicating that age is a significant risk factor. The death rate of senior people is about $\exp(2.3) = 10$ times the death rate of people between 15 and 64. 
-	\item In the previous question, $\text{deviance}/\text{df}=2724/243=11.2 > 1$, indicating that overdispersion exists in the data. We use negative binomial regression instead of Poisson regression, which means the variance $V(n_{i0}) = \mathbb{E}[n_{i0}] +\mathbb{E}^{2}[n_{i0}]/\theta$. Under the new setting, $\hat{\beta} = 2.345$ and  $\text{SE}(\hat{\beta}) = 0.042$. The significance conclusion doesn't change but $\text{deviance}/\text{df}=266/243=1.09$ is much smaller than that of Poisson regression. $\hat{\theta}=9.88$.
+	$n_{i0}$ is the death count of people aged between 15 and 64 in week $t_{i}$. $n_{i1}$ is the death count of people older than 65. I scale the week number so that $t_{i} = i$ ($i=0,1,\cdots 131$). $N_{0}$ is the total population aged between 15 and 64 in Michigan. $N_{1}$ is the total population older than 65. According to \href{https://www.census.gov/quickfacts/MI}{census bureau data}, $N_{0}\approx 6.08$ million and $N_{1}\approx 1.82$ million. $\alpha$ represents the effect of time trend.  $\beta_1$ represents the difference in death rates between people older than 65 and people between 15-64 years old adjusted for time. $\beta_{1}$ is the parameter of interest.  $\hat{\beta}_{1} = 2.307$ and $\text{SE}(\hat{\beta}_{1}) = 0.012$. The p value was smaller than $2\times 10^{-16}$, indicating that age is a significant risk factor. The death rate of senior people is about $\exp(2.3) = 10$ times the death rate of people between 15 and 64. $\hat{\alpha} = -0.0026$ and $\text{SE}(\hat{\alpha})=1.3\times 10^{-4}$. The p value for $\hat{\alpha}$ is also smaller than $2\times 10^{-16}$, indicating that the death rate is steadily decreasing month by month, although the death rate is only decreasing at a tiny $1-\exp(-0.0025)=0.25\%$.
+	\item In the previous question, $\text{deviance}/\text{df}=30277/261=116 > 1$, indicating that overdispersion exists in the data. We use negative binomial regression instead of Poisson regression, which means the variance $V(n) = \mathbb{E}[n] +\mathbb{E}^{2}[n]/\theta$. Under the new setting, $\hat{\beta}_{1} = 2.30$ and  $\text{SE}(\hat{\beta}_1) = 0.114$. The significance conclusion doesn't change but $\text{deviance}/\text{df}=300/261=1.15$ is much smaller than that of Poisson regression. $\hat{\theta}=1.18$. $\hat{\alpha} = -0.002$ and $\text{SE}(\hat{\alpha}) = 0.0014$, indicating that the time trend is not significant any more after fitting negative binomial regression to account for overdispersion.
 	
-	\item We separate the last two years into five periods
+	\item In this subquestion we set five different slopes for the time trends separated by four time knots. The first time knot is set at December 14, 2020(availability to the general public, week 81). The second time knot is set at June 26, 2021(the time when the percent of infection by the delta variant exceeded 50\% of the US population, week 137). The third time knot is set at Nov 29, 2021(the time when the omicron variant began to spread in South Africa, week 181). The fourth time knot is set at May 22, 2022(when the omicron became dominant in the USA, 231). The broken-stick model can be parametrized as
+	 \begin{align*}
+		\log(\frac{\mathbb{E}[n_{i0}]}{N_{0}}) &= \beta_{0} + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i}\\
+		\log(\frac{\mathbb{E}[n_{i1}]}{N_{1}}) &= \beta_{0} + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i} + \beta_{1}
+	\end{align*}
+	
 \end{enumerate}
 
 

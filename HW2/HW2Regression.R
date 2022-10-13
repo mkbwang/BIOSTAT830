@@ -45,21 +45,28 @@ deaths_by_age_group <- deaths_by_age_group[order(deaths_by_age_group$End.Week,
 deaths_by_age_group$End.Week <- rep(seq(0, 131), each=2)
 
 
-library(mgcv)
+# library(mgcv)
 
-poi_model <- gam(death_counts ~ offset(log(population)) + s(End.Week, k=20)+ age_group,
+poi_model <- glm(death_counts ~ offset(log(population)) + End.Week + age_group,
                     family=poisson("log"), data=deaths_by_age_group)
 
-nb_model <- gam(death_counts ~ offset(log(population)) + s(End.Week, k=20)+ age_group,
-                family=nb(), data=deaths_by_age_group)
+library(MASS)
+nb_model <- glm.nb(death_counts ~ offset(log(population)) + End.Week + age_group,
+                   data=deaths_by_age_group)
 
 
-poi_knots_model <- gam(death_counts ~ offset(log(population)) + s(End.Week, k=20)+ age_group + vaccination + delta + omicron1 + omicron2,
+poi_knots_model <- glm(death_counts ~ offset(log(population)) + End.Week  +
+                         I(vaccination * End.Week) +
+                         I(delta * End.Week) +
+                         I(omicron1 * End.Week) +
+                         I(omicron2 * End.Week) + age_group,
                        family=poisson("log"), data=deaths_by_age_group)
 
-poi_knots_coefs <- poi_knots_model$coefficients[1:6]
-poi_knots_covar <- vcov(poi_knots_model)[1:6, 1:6]
 
-nb_knots_model <- gam(death_counts ~ offset(log(population)) + s(End.Week, k=20)+ age_group + vaccination + delta + omicron1 + omicron2,
-                       family=nb(), data=deaths_by_age_group)
+nb_knots_model <- glm.nb(death_counts ~ offset(log(population)) + End.Week  +
+                        I(vaccination * End.Week) +
+                        I(delta * End.Week) +
+                        I(omicron1 * End.Week) +
+                        I(omicron2 * End.Week) + age_group, data=deaths_by_age_group)
+
 
