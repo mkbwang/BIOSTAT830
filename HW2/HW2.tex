@@ -149,15 +149,15 @@
 			Coefficient & Effect Size & SE & P value & Meaning\\
 			\midrule
 			$\alpha_{0}$ & $-0.010$ & $7.6\times 10^{-4}$ & $<2\times 10^{-16}$ & \makecell{Average decrease per week of \\ log Death Rate of  Population \\ between 15 and 64 \\ at the beginning}\\
-			\addlinespace[0.3cm]
+			\addlinespace[0.2cm]
 			$\alpha_{1}$ & $0.0067$ & $5.7\times 10^{-4}$ & $<2\times 10^{-16}$& \makecell{Change in decrease rate \\ of log death rate\\ after Dec 14, 2020}\\
-			\addlinespace[0.3cm]
+			\addlinespace[0.2cm]
 			$\alpha_{2}$ & $-0.0018$ & $2.8\times 10^{-4}$ & $9.38\times 10^{-11}$& \makecell{Change in decrease rate \\ of log death rate\\ after June 26, 2021}\\
-			\addlinespace[0.3cm]
+			\addlinespace[0.2cm]
 			$\alpha_{3}$ & $0.0057$ & $2.04\times 10^{-4}$ & $<2\times 10^{-16}$& \makecell{Change in decrease rate \\ of log death rate\\ after Nov 29, 2021}\\
-			\addlinespace[0.3cm]
+			\addlinespace[0.2cm]
 			$\alpha_{4}$ & $-0.0095$ & $2.04\times 10^{-4}$ & $<2\times 10^{-16}$& \makecell{Change in decrease rate \\ of log death rate\\ after May 22, 2022}\\
-			\addlinespace[0.3cm]
+			\addlinespace[0.2cm]
 			$\beta_{1}$ & 2.31 & 0.012 & $<2\times 10^{-16}$ & \makecell{Difference of log death rate \\between population aged 65+ \\ and population aged between 15 and 65}\\
 			\bottomrule
 		\end{tabular}
@@ -175,15 +175,15 @@
 			Coefficient & Effect Size & SE & P value & Meaning\\
 			\midrule
 			$\alpha_{0}$ & $-0.0068$ & $0.008$ & $0.40$ & \makecell{Average decrease per week of \\ log Death Rate of  Population \\ between 15 and 64 \\ at the beginning}\\
-			\addlinespace[0.3cm]
+			\addlinespace[0.2cm]
 			$\alpha_{1}$ & $0.007$ & $0.006$ & $0.2435$& \makecell{Change in decrease rate \\ of log death rate\\ after Dec 14, 2020}\\
-			\addlinespace[0.3cm]
+			\addlinespace[0.2cm]
 			$\alpha_{2}$ & $-0.0011$ & $0.0029$ & $0.70$& \makecell{Change in decrease rate \\ of log death rate\\ after June 26, 2021}\\
-			\addlinespace[0.3cm]
+			\addlinespace[0.2cm]
 			$\alpha_{3}$ & $0.0036$ & $0.0021$ & $0.086$& \makecell{Change in decrease rate \\ of log death rate\\ after Nov 29, 2021}\\
-			\addlinespace[0.3cm]
+			\addlinespace[0.2cm]
 			$\alpha_{4}$ & $-0.011$ & $0.001$ & $3.1\times 10^{-11}$& \makecell{Change in decrease rate \\ of log death rate\\ after May 22, 2022}\\
-			\addlinespace[0.3cm]
+			\addlinespace[0.2cm]
 			$\beta_{1}$ & 2.38 & 0.107 & $<2\times 10^{-16}$ & \makecell{Difference of log death rate \\between population aged 65+ \\ and population aged between 15 and 65}\\
 			\bottomrule
 		\end{tabular}
@@ -191,5 +191,76 @@
 	\end{table}
 \end{enumerate}
 
+
+\section*{Problem 4}
+
+\begin{enumerate}[(a)]
+	\item After adding the full vaccination information as the main effect, the model becomes
+	\begin{align*}
+		\log(\frac{\mathbb{E}[n_{i0}]}{N_{0}}) &= \beta_{0} + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i} + \gamma_{1} v_{i0}\\
+		\log(\frac{\mathbb{E}[n_{i1}]}{N_{1}}) &= \beta_{0} + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i} + \beta_{1} + \gamma_{1} v_{i1}
+	\end{align*}
+	in which $\gamma_{1}$ is the effect size of the fully vaccination rate. $v_{i0}$ is the fully vaccination percentage of the population aged between 18 and 64 by the end of week $t_{i}$. $v_{i1}$ is the fully vaccination percentage of population older than 65 by the end of week $t_{i}$. I fit the negative binomial distribution to take into account overdispersion. The coefficients are summarized in Table \ref{sticknbfullvc}. The fully vaccination rate didn't significantly reduce the mortality rate. The other coefficients are almost the same as the negative binomial model without vaccination rate(Table \ref{sticknb}).
+	
+	
+	\begin{table}[htbp]
+		\centering
+		\begin{tabular}{ccccc}
+			\toprule
+			Coefficient & Effect Size & SE & P value & Meaning\\
+			\midrule
+			$\alpha_{0}$ & $-0.0057$ & $0.008$ & $0.48$ & \makecell{Average decrease per week of \\ log Death Rate of  Population \\ between 15 and 64 \\ at the beginning}\\
+			\addlinespace[0.2cm]
+			$\alpha_{1}$ & $0.011$ & $0.006$ & $0.083$& \makecell{Change in decrease rate \\ of log death rate\\ after Dec 14, 2020}\\
+			\addlinespace[0.2cm]
+			$\alpha_{2}$ & $8.5\times 10^{-4}$ & $0.0031$ & $0.785$& \makecell{Change in decrease rate \\ of log death rate\\ after June 26, 2021}\\
+			\addlinespace[0.2cm]
+			$\alpha_{3}$ & $0.0030$ & $0.0022$ & $0.173$& \makecell{Change in decrease rate \\ of log death rate\\ after Nov 29, 2021}\\
+			\addlinespace[0.2cm]
+			$\alpha_{4}$ & $-0.013$ & $0.0018$ & $2.4\times 10^{-12}$& \makecell{Change in decrease rate \\ of log death rate\\ after May 22, 2022}\\
+			\addlinespace[0.2cm]
+			$\beta_{1}$ & 2.50 & 0.128 & $<2\times 10^{-16}$ & \makecell{Difference of log death rate \\between population aged 65+ \\ and population aged between 15 and 65}\\
+			\addlinespace[0.2cm]
+			$\gamma_{1}$ & $-0.0077$ & $0.0043$ & 0.071 & \makecell{Effect Size of \\fully vaccination percentage}\\
+			\bottomrule
+		\end{tabular}
+		\caption{Negative Binomial Regression with Five Broken Sticks for the Time Trend and Full Vaccination Rate}\label{sticknbfullvc}
+	\end{table}	
+	
+	\item We add an interaction term between age groups and vaccination to determine if there is significant difference between senior population and younger adults regarding effectiveness of full vaccination on reducing mortality. The model is
+		\begin{align*}
+		\log(\frac{\mathbb{E}[n_{i0}]}{N_{0}}) &= \beta_{0} + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i} + \gamma_{1} v_{i0}\\
+		\log(\frac{\mathbb{E}[n_{i1}]}{N_{1}}) &= \beta_{0} + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i} +  \\
+		&\quad \beta_{1} +(\gamma_{1}+\gamma_{2}) v_{i1}
+	\end{align*}
+	
+	There is an extra parameter $\gamma_{2}$ to represent the difference in effect sizes of full vaccination rates between senior population and younger population. The fitted parameters are in table \ref{sticknbfullvcage}. There is no significant difference between 65+ population and 18-64 population in terms of effectiveness of full vaccination on reducing mortality rate.
+	
+	\begin{table}[htbp]
+		\centering
+		\begin{tabular}{ccccc}
+			\toprule
+			Coefficient & Effect Size & SE & P value & Meaning\\
+			\midrule
+			$\alpha_{0}$ & $-0.0064$ & $0.0082$ & $0.43$ & \makecell{Average decrease per week of \\ log Death Rate of  Population \\ between 15 and 64 \\ at the beginning}\\
+			\addlinespace[0.2cm]
+			$\alpha_{1}$ & $0.010$ & $0.006$ & $0.124$& \makecell{Change in decrease rate \\ of log death rate\\ after Dec 14, 2020}\\
+			\addlinespace[0.2cm]
+			$\alpha_{2}$ & $-2.4\times 10^{-4}$ & $0.0032$ & $0.942$& \makecell{Change in decrease rate \\ of log death rate\\ after June 26, 2021}\\
+			\addlinespace[0.2cm]
+			$\alpha_{3}$ & $0.0034$ & $0.0022$ & $0.132$& \makecell{Change in decrease rate \\ of log death rate\\ after Nov 29, 2021}\\
+			\addlinespace[0.2cm]
+			$\alpha_{4}$ & $-0.012$ & $0.0018$ & $5.07\times 10^{-11}$& \makecell{Change in decrease rate \\ of log death rate\\ after May 22, 2022}\\
+			\addlinespace[0.2cm]
+			$\beta_{1}$ & 2.61 & 0.164 & $<2\times 10^{-16}$ & \makecell{Difference of log death rate \\between population aged 65+ \\ and population aged between 15 and 65}\\
+			\addlinespace[0.2cm]
+			$\gamma_{1}$ & $-0.0022$ & $0.0064$ & 0.735 & \makecell{Effect Size of \\fully vaccinated percentage}\\
+			\addlinespace[0.2cm]
+			$\gamma_{2}$ & $-0.0042$ & $0.0037$ & 0.254 & \makecell{Difference in Effect Size of \\fully vaccination percentage between \\ 65+ population and 18-64 population}\\ 
+			\bottomrule
+		\end{tabular}
+		\caption{Negative Binomial Regression with Five Broken Sticks for the Time Trend , Full Vaccination Rate and Interaction between Age Group and Vaccination Rate}\label{sticknbfullvcage}
+	\end{table}	
+\end{enumerate}
 
 \end{document}
