@@ -2,7 +2,7 @@
 \usepackage{paralist,amsmath,amssymb,thumbpdf,lmodern}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
-\usepackage[margin=0.8in]{geometry}
+\usepackage[margin=0.5in]{geometry}
 \usepackage{graphicx}
 \usepackage{enumerate}
 \usepackage{physics}
@@ -110,7 +110,7 @@
 	\item  The death counts were provided in 10 age groups(under 1 year, 1-4, 5-14, 15-24, 25-34, 35-44, 45-54, 55-64, 65-74, 75-84, 85+). Before aggregating death counts in three target age groups(< 18, 19-64, 65+), I split the deaths in age group 15-24 into two age groups(15-18, 19-24) in 40/60 proportion. From the weekly death count time series plot(Figure \ref{weekdeath}), I can notice that death events peaked at four time points for people of all age groups and sex groups. They are April to May 2020(beginning of pandemic), December 2020 to January 2021(the first winter), May 2021(the second spring) and December 2021 to January 2022(the second winter). In panel A, I plot the death trends by three age groups. There were virtually no death cases for the youngest age group. Death counts from the oldest age group have been consistently higher than the other two age groups, and were considerably higher during the four severe periods. There hasn't been significant differences between male and female in terms of death cases throughout the past two years. The death counts of males were slightly higher than females during the four severe periods.
 	\begin{figure}[htbp]
 		\centering
-		\includegraphics[scale=0.7]{DeathTrajectory.pdf}
+		\includegraphics[scale=0.8]{DeathTrajectory.pdf}
 		\caption{Weekly Death Count Trends by Age Group(A) and Sex Group(B)}\label{weekdeath}
 	\end{figure} 
 	
@@ -120,7 +120,7 @@
 	
 	\begin{figure}[htbp]
 		\centering
-		\includegraphics[scale=0.7]{vaccination.pdf}
+		\includegraphics[scale=0.8]{vaccination.pdf}
 		\caption{The proportion of population with at least one dose of vaccination(A) and the proportion of fully vaccinated population(B)}\label{vaccinationplot}
 	\end{figure}
 \end{enumerate}
@@ -129,67 +129,47 @@
 \section*{Problem 3}
 
 \begin{enumerate}[(a)]
-	\item We notice that there are barely any death cases for children younger than 14, therefore we only compare people of age 15-64 and people older than 65. We first fit a Poisson regression on the weekly death counts across 132 weeks. The Poisson model with log link is parameterized as
+	\item We fit a Poisson regression on the weekly death counts across 132 weeks. The Poisson model with log link is parameterized as
 	\begin{align*}
-		\log(\frac{\mathbb{E}[n_{i0}]}{N_{0}}) &= \beta_{0} + \alpha t_{i}\\
-		\log(\frac{\mathbb{E}[n_{i1}]}{N_{1}}) &= \beta_{0} + \alpha t_{i} + \beta_{1}
+		\log(\frac{\mathbb{E}[n_{ik}]}{N_{k}}) &= \beta_{0} + \beta_{1}k + \alpha_{0} t_{i} 
 	\end{align*}
-	$n_{i0}$ is the death count of people aged between 15 and 64 in week $t_{i}$. $n_{i1}$ is the death count of people older than 65. I scale the week number so that $t_{i} = i$ ($i=0,1,\cdots 131$). $N_{0}$ is the total population aged between 15 and 64 in Michigan. $N_{1}$ is the total population older than 65. According to \href{https://www.census.gov/quickfacts/MI}{census bureau data}, $N_{0}\approx 6.08$ million and $N_{1}\approx 1.82$ million. $\alpha$ represents the effect of time trend.  $\beta_1$ represents the difference in death rates between people older than 65 and people between 15-64 years old adjusted for time. $\beta_{1}$ is the parameter of interest.  $\hat{\beta}_{1} = 2.307$ and $\text{SE}(\hat{\beta}_{1}) = 0.012$. The p value was smaller than $2\times 10^{-16}$, indicating that age is a significant risk factor. The death rate of senior people is about $\exp(2.3) = 10$ times the death rate of people between 15 and 64. $\hat{\alpha} = -0.0026$ and $\text{SE}(\hat{\alpha})=1.3\times 10^{-4}$. The p value for $\hat{\alpha}$ is also smaller than $2\times 10^{-16}$, indicating that the death rate is steadily decreasing month by month, although the death rate is only decreasing at a tiny $1-\exp(-0.0025)=0.25\%$.
-	\item In the previous question, $\text{deviance}/\text{df}=30277/261=116 > 1$, indicating that overdispersion exists in the data. We use negative binomial regression instead of Poisson regression, which means the variance $V(n) = \mathbb{E}[n] +\mathbb{E}^{2}[n]/\theta$. Under the new setting, $\hat{\beta}_{1} = 2.30$ and  $\text{SE}(\hat{\beta}_1) = 0.114$. The significance conclusion doesn't change but $\text{deviance}/\text{df}=300/261=1.15$ is much smaller than that of Poisson regression. $\hat{\theta}=1.18$. $\hat{\alpha} = -0.002$ and $\text{SE}(\hat{\alpha}) = 0.0014$, indicating that the time trend is not significant any more after fitting negative binomial regression to account for overdispersion.
+	$t_{i} = i$ represents the week number ($i=0,1,\cdots 131$). $k=0,1,2$ represents three age groups(under 18, 19-64 and 65+).
+	$n_{ik}$ is the death count of people from age group $k$ in week $t_{i}$. $N_{k}$ represents the total population from the three age groups According to \href{https://www.census.gov/quickfacts/MI}{census bureau data}, $N_{0}\approx 2.14$ million, $N_{1} \approx 6.05$ million and  $N_{2}\approx 1.81$ million. $\alpha$ represents the effect of time trend.  $\beta_1$ represents the difference in death rates between two adjacent age groups. $\beta_{1}$ is the parameter of interest.  $\hat{\beta}_{1} = 2.38$ with a p value smaller than $2\times 10^{-16}$, indicating that age is a significant risk factor. The death rate of population over 65 is about $\exp(2.38) = 10.8$ times the death rate of people between 19 and 64. $\hat{\alpha}_{0} = -2.54\times 10^{-3}$ with a p value smaller than $2\times 10^{-16}$, indicating that the death rate is steadily decreasing week by week, although the death rate is only decreasing at a tiny $0.25\%$ per week.
+	\item In the previous question, $\text{deviance}/\text{df}=30783/393=78.3 > 1$, indicating that overdispersion exists in the data. We use negative binomial regression instead of Poisson regression, which means the variance $V(n) = \mathbb{E}[n] +\mathbb{E}^{2}[n]/\theta$. Under the new setting, $\hat{\beta}_{1} = 3.1$. The significance conclusion doesn't change but $\text{deviance}/\text{df}=417/393=1.06$ is much smaller than that of Poisson regression. $\hat{\theta}=0.96$. $\hat{\alpha}$ is not significantly different from zero after fitting negative binomial regression to account for overdispersion, indicating that there isn't significant time trend after all.
 	
 	\item In this subquestion we set five different slopes for the time trends separated by four time knots. The first time knot is set at December 14, 2020(availability to the general public, week 81). The second time knot is set at June 26, 2021(the time when the percent of infection by the delta variant exceeded 50\% of the US population, week 137). The third time knot is set at Nov 29, 2021(the time when the omicron variant began to spread in South Africa, week 181). The fourth time knot is set at May 22, 2022(when the omicron became dominant in the USA, 231). The broken-stick model can be parametrized as
 	 \begin{align*}
-		\log(\frac{\mathbb{E}[n_{i0}]}{N_{0}}) &= \beta_{0} + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i}\\
-		\log(\frac{\mathbb{E}[n_{i1}]}{N_{1}}) &= \beta_{0} + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i} + \beta_{1}
+		\log(\frac{\mathbb{E}[n_{ik}]}{N_{k}}) &= \beta_{0} + \beta_{1}k + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i}
 	\end{align*}
-	The summary of the Poisson regression coefficients are in table \ref{stickpoisson}. The estimated difference of log death rate between two populations is the same as the previous questions. The death rates were decreasing throughout time, but the decrease rate of log death rate changed at each time knot that we chose. The decrease rate slowed down after Dec 14 2020, sped up after June 26, 2021, slowed down again after Nov 29, 2021 and sped up after May 22, 2022. 
+	The summary of the Poisson regression coefficients are in the third column of Table \ref{p3table}. The estimated difference of log death rate between adjacent age groups is the same as the previous questions. The death rates were decreasing throughout time, but the decrease rate of log death rate changed at each time knot that we chose. The decrease rate slowed down after Dec 14 2020, sped up after June 26, 2021, slowed down again after Nov 29, 2021 and sped up after May 22, 2022. The summary of the negative binomial regression coefficients are in the fourth column of Table \ref{p3table}. The big difference between negative binomial regression and poisson regression lies in the inference of the slopes of the "broken sticks". After considering overdispersion, the decrease rate of the log death rate stayed relatively unchanged until May 22 2022.
+	
 	\begin{table}[htbp]
 		\centering
-		\begin{tabular}{ccccc}
+		\begin{tabular}{cccccc}
 			\toprule
-			Coefficient & Effect Size & SE & P value & Meaning\\
+			Coefficient & Poi & NB & Poi w/ BS & NB w/ BS & Meaning\\
 			\midrule
-			$\alpha_{0}$ & $-0.010$ & $7.6\times 10^{-4}$ & $<2\times 10^{-16}$ & \makecell{Average decrease per week of \\ log Death Rate of  Population \\ between 15 and 64 \\ at the beginning}\\
+			$\beta_{0}$ & $-13.6^\star$ & $-14.9^\star$ & $-13.5^\star$ & $-14.9^\star$ & \makecell{Expected log death rate \\of population younger than 18\\ on 03/14/2020 } \\ 
 			\addlinespace[0.2cm]
-			$\alpha_{1}$ & $0.0067$ & $5.7\times 10^{-4}$ & $<2\times 10^{-16}$& \makecell{Change in decrease rate \\ of log death rate\\ after Dec 14, 2020}\\
+			$\beta_{1}$ & $2.38^\star$ & $3.11^\star$ & $2.37^\star$ & $3.14^\star$ & \makecell{Difference of log death rate \\between adjacent age groups }\\
 			\addlinespace[0.2cm]
-			$\alpha_{2}$ & $-0.0018$ & $2.8\times 10^{-4}$ & $9.38\times 10^{-11}$& \makecell{Change in decrease rate \\ of log death rate\\ after June 26, 2021}\\
+			$\alpha_{0}$ & $-2.54\times 10^{-3\star}$ & $-1.48\times 10^{-4}$ & $-0.010^\star$ & $-8.15\times 10^{-3}$ & \makecell{Average decrease per week of \\ log Death Rate }\\
 			\addlinespace[0.2cm]
-			$\alpha_{3}$ & $0.0057$ & $2.04\times 10^{-4}$ & $<2\times 10^{-16}$& \makecell{Change in decrease rate \\ of log death rate\\ after Nov 29, 2021}\\
+			$\alpha_{1}$ & - & - & $6.78\times 10^{-3\star}$  & $9.73\times 10^{-3}$ & \makecell{Change in decrease rate \\ of log death rate\\ after Dec 14, 2020}\\
 			\addlinespace[0.2cm]
-			$\alpha_{4}$ & $-0.0095$ & $2.04\times 10^{-4}$ & $<2\times 10^{-16}$& \makecell{Change in decrease rate \\ of log death rate\\ after May 22, 2022}\\
+			$\alpha_{2}$ & - & - & $-1.80\times 10^{-3\star}$ & $-3.04\times 10^{-4}$ & \makecell{Change in decrease rate \\ of log death rate\\ after June 26, 2021}\\
 			\addlinespace[0.2cm]
-			$\beta_{1}$ & 2.31 & 0.012 & $<2\times 10^{-16}$ & \makecell{Difference of log death rate \\between population aged 65+ \\ and population aged between 15 and 65}\\
+			$\alpha_{3}$ & - & - & $5.73\times 10^{-3\star}$ & $2.88\times 10^{-3}$ & \makecell{Change in decrease rate \\ of log death rate\\ after Nov 29, 2021}\\
+			\addlinespace[0.2cm]
+			$\alpha_{4}$ & - & - & $-9.48\times 10^{-3\star}$ & $-0.013^\star$ & \makecell{Change in decrease rate \\ of log death rate\\ after May 22, 2022}\\
 			\bottomrule
 		\end{tabular}
-		\caption{Poisson Regression with Five Broken Sticks for the time trend}\label{stickpoisson}
+		\caption{Regression Outcomes for Problem 3}\label{p3table}
 	\end{table}	
 	
 	
-	The summary of the negative binomial regression coefficients are in table \ref{sticknb}. The big difference between negative binomial regression and poisson regression lies in the inference of the slopes of the "broken sticks". After considering overdispersion, the decrease rate of the log death rate stayed relatively unchanged until May 22 2022.
 	
 	
-	\begin{table}[htbp]
-		\centering
-		\begin{tabular}{ccccc}
-			\toprule
-			Coefficient & Effect Size & SE & P value & Meaning\\
-			\midrule
-			$\alpha_{0}$ & $-0.0068$ & $0.008$ & $0.40$ & \makecell{Average decrease per week of \\ log Death Rate of  Population \\ between 15 and 64 \\ at the beginning}\\
-			\addlinespace[0.2cm]
-			$\alpha_{1}$ & $0.007$ & $0.006$ & $0.2435$& \makecell{Change in decrease rate \\ of log death rate\\ after Dec 14, 2020}\\
-			\addlinespace[0.2cm]
-			$\alpha_{2}$ & $-0.0011$ & $0.0029$ & $0.70$& \makecell{Change in decrease rate \\ of log death rate\\ after June 26, 2021}\\
-			\addlinespace[0.2cm]
-			$\alpha_{3}$ & $0.0036$ & $0.0021$ & $0.086$& \makecell{Change in decrease rate \\ of log death rate\\ after Nov 29, 2021}\\
-			\addlinespace[0.2cm]
-			$\alpha_{4}$ & $-0.011$ & $0.001$ & $3.1\times 10^{-11}$& \makecell{Change in decrease rate \\ of log death rate\\ after May 22, 2022}\\
-			\addlinespace[0.2cm]
-			$\beta_{1}$ & 2.38 & 0.107 & $<2\times 10^{-16}$ & \makecell{Difference of log death rate \\between population aged 65+ \\ and population aged between 15 and 65}\\
-			\bottomrule
-		\end{tabular}
-		\caption{Negative Binomial Regression with Five Broken Sticks for the time trend}\label{sticknb}
-	\end{table}
 \end{enumerate}
 
 
@@ -198,69 +178,46 @@
 \begin{enumerate}[(a)]
 	\item After adding the full vaccination information as the main effect, the model becomes
 	\begin{align*}
-		\log(\frac{\mathbb{E}[n_{i0}]}{N_{0}}) &= \beta_{0} + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i} + \gamma_{1} v_{i0}\\
-		\log(\frac{\mathbb{E}[n_{i1}]}{N_{1}}) &= \beta_{0} + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i} + \beta_{1} + \gamma_{1} v_{i1}
+		\log(\frac{\mathbb{E}[n_{ik}]}{N_{k}}) &= \beta_{0} + \beta_{1}k +\gamma_{0} v_{ik} + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i} 
 	\end{align*}
-	in which $\gamma_{1}$ is the effect size of the fully vaccination rate. $v_{i0}$ is the fully vaccination percentage of the population aged between 18 and 64 by the end of week $t_{i}$. $v_{i1}$ is the fully vaccination percentage of population older than 65 by the end of week $t_{i}$. I fit the negative binomial distribution to take into account overdispersion. The coefficients are summarized in Table \ref{sticknbfullvc}. The fully vaccination rate didn't significantly reduce the mortality rate. The other coefficients are almost the same as the negative binomial model without vaccination rate(Table \ref{sticknb}).
+	in which $\gamma_{0}$ is the effect size of the fully vaccination rate. $v_{ik}$ is the fully vaccination percentage for age group $k$ at the end of week $i$. I fit the negative binomial distribution to take into account overdispersion. The coefficients are summarized in Table \ref{sticknbfullvc}. The fully vaccination rate didn't significantly reduce the mortality rate. The other coefficients are almost the same as the negative binomial model without vaccination rate(Table \ref{sticknb}).
 	
-	
-	\begin{table}[htbp]
-		\centering
-		\begin{tabular}{ccccc}
-			\toprule
-			Coefficient & Effect Size & SE & P value & Meaning\\
-			\midrule
-			$\alpha_{0}$ & $-0.0057$ & $0.008$ & $0.48$ & \makecell{Average decrease per week of \\ log Death Rate of  Population \\ between 15 and 64 \\ at the beginning}\\
-			\addlinespace[0.2cm]
-			$\alpha_{1}$ & $0.011$ & $0.006$ & $0.083$& \makecell{Change in decrease rate \\ of log death rate\\ after Dec 14, 2020}\\
-			\addlinespace[0.2cm]
-			$\alpha_{2}$ & $8.5\times 10^{-4}$ & $0.0031$ & $0.785$& \makecell{Change in decrease rate \\ of log death rate\\ after June 26, 2021}\\
-			\addlinespace[0.2cm]
-			$\alpha_{3}$ & $0.0030$ & $0.0022$ & $0.173$& \makecell{Change in decrease rate \\ of log death rate\\ after Nov 29, 2021}\\
-			\addlinespace[0.2cm]
-			$\alpha_{4}$ & $-0.013$ & $0.0018$ & $2.4\times 10^{-12}$& \makecell{Change in decrease rate \\ of log death rate\\ after May 22, 2022}\\
-			\addlinespace[0.2cm]
-			$\beta_{1}$ & 2.50 & 0.128 & $<2\times 10^{-16}$ & \makecell{Difference of log death rate \\between population aged 65+ \\ and population aged between 15 and 65}\\
-			\addlinespace[0.2cm]
-			$\gamma_{1}$ & $-0.0077$ & $0.0043$ & 0.071 & \makecell{Effect Size of \\fully vaccination percentage}\\
-			\bottomrule
-		\end{tabular}
-		\caption{Negative Binomial Regression with Five Broken Sticks for the Time Trend and Full Vaccination Rate}\label{sticknbfullvc}
-	\end{table}	
 	
 	\item We add an interaction term between age groups and vaccination to determine if there is significant difference between senior population and younger adults regarding effectiveness of full vaccination on reducing mortality. The model is
 		\begin{align*}
-		\log(\frac{\mathbb{E}[n_{i0}]}{N_{0}}) &= \beta_{0} + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i} + \gamma_{1} v_{i0}\\
-		\log(\frac{\mathbb{E}[n_{i1}]}{N_{1}}) &= \beta_{0} + \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i} +  \\
-		&\quad \beta_{1} +(\gamma_{1}+\gamma_{2}) v_{i1}
+		\log(\frac{\mathbb{E}[n_{ik}]}{N_{k}}) &= \beta_{0} + \beta_{1}k +(\gamma_{0} + \gamma_{1}k) v_{ik} +\\ 
+		&\quad \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t_{i} \geq 81) + \alpha_{2}\mathbb{I}(t_{i} \geq 137) +\alpha_{3} \mathbb{I}(t_{i} \geq 181) + \alpha_{4}\mathbb{I}(t_{i} \geq 231)\right) t_{i}
 	\end{align*}
 	
 	There is an extra parameter $\gamma_{2}$ to represent the difference in effect sizes of full vaccination rates between senior population and younger population. The fitted parameters are in table \ref{sticknbfullvcage}. There is no significant difference between 65+ population and 18-64 population in terms of effectiveness of full vaccination on reducing mortality rate.
 	
 	\begin{table}[htbp]
 		\centering
-		\begin{tabular}{ccccc}
+		\begin{tabular}{cccc}
 			\toprule
-			Coefficient & Effect Size & SE & P value & Meaning\\
+			Coefficient & \makecell{NB Model \\ Without Interaction} & \makecell{NB Model \\ with Interaction } &  Meaning\\
 			\midrule
-			$\alpha_{0}$ & $-0.0064$ & $0.0082$ & $0.43$ & \makecell{Average decrease per week of \\ log Death Rate of  Population \\ between 15 and 64 \\ at the beginning}\\
+			$\beta_{0}$ & $-15.0^\star$ & $-15.3^\star$ & \makecell{Expected log death rate \\of population younger than 18\\ on 03/14/2020 }\\
 			\addlinespace[0.2cm]
-			$\alpha_{1}$ & $0.010$ & $0.006$ & $0.124$& \makecell{Change in decrease rate \\ of log death rate\\ after Dec 14, 2020}\\
+			$\beta_{1}$ & $3.21^\star$ & $3.51^\star$ &  \makecell{Difference of log death rate \\between adjacent age groups}\\
 			\addlinespace[0.2cm]
-			$\alpha_{2}$ & $-2.4\times 10^{-4}$ & $0.0032$ & $0.942$& \makecell{Change in decrease rate \\ of log death rate\\ after June 26, 2021}\\
+			$\gamma_{0}$ & $-3.78\times 10^{-3}$ & $0.033^\star$ &  \makecell{Effect Size of \\fully vaccinated percentage}\\
 			\addlinespace[0.2cm]
-			$\alpha_{3}$ & $0.0034$ & $0.0022$ & $0.132$& \makecell{Change in decrease rate \\ of log death rate\\ after Nov 29, 2021}\\
+			$\gamma_{1}$ & - & $-0.018^\star$ &  \makecell{Difference in Effect Size of \\fully vaccination percentage \\ between adjacent age groups}\\
+			\addlinespace[0.2cm] 
+			$\alpha_{0}$ & $-7.76\times 10^{-3}$ & $-9.9\times 10^{-3}$ &   \makecell{Average decrease per week of \\ log Death Rate of  Population \\ between 15 and 64 \\ at the beginning}\\
 			\addlinespace[0.2cm]
-			$\alpha_{4}$ & $-0.012$ & $0.0018$ & $5.07\times 10^{-11}$& \makecell{Change in decrease rate \\ of log death rate\\ after May 22, 2022}\\
+			$\alpha_{1}$ & $0.011$ & $8.5\times 10^{-3}$ &  \makecell{Change in decrease rate \\ of log death rate\\ after Dec 14, 2020}\\
 			\addlinespace[0.2cm]
-			$\beta_{1}$ & 2.61 & 0.164 & $<2\times 10^{-16}$ & \makecell{Difference of log death rate \\between population aged 65+ \\ and population aged between 15 and 65}\\
+			$\alpha_{2}$ & $6.44\times 10^{-4}$ & $-3.5\times 10^{-3}$ &  \makecell{Change in decrease rate \\ of log death rate\\ after June 26, 2021}\\
 			\addlinespace[0.2cm]
-			$\gamma_{1}$ & $-0.0022$ & $0.0064$ & 0.735 & \makecell{Effect Size of \\fully vaccinated percentage}\\
+			$\alpha_{3}$ & $2.7\times 10^{-3}$ & $3.2\times 10^{-3}$ & \makecell{Change in decrease rate \\ of log death rate\\ after Nov 29, 2021}\\
 			\addlinespace[0.2cm]
-			$\gamma_{2}$ & $-0.0042$ & $0.0037$ & 0.254 & \makecell{Difference in Effect Size of \\fully vaccination percentage between \\ 65+ population and 18-64 population}\\ 
+			$\alpha_{4}$ & $-0.014^\star$ & $-0.011^\star$ &  \makecell{Change in decrease rate \\ of log death rate\\ after May 22, 2022}\\
+			
 			\bottomrule
 		\end{tabular}
-		\caption{Negative Binomial Regression with Five Broken Sticks for the Time Trend , Full Vaccination Rate and Interaction between Age Group and Vaccination Rate}\label{sticknbfullvcage}
+		\caption{Regression Outcomes for Problem 4}\label{P4table}
 	\end{table}	
 \end{enumerate}
 
