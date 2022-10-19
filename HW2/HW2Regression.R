@@ -44,7 +44,6 @@ vaccines_subset_long[seq(1, 274, 3)] <- vaccines_subset$Under18
 vaccines_subset_long[seq(2, 275, 3)] <- vaccines_subset$Between19_64
 vaccines_subset_long[seq(3, 276, 3)] <- vaccines_subset$Over65
 #vwhich(deaths_by_age_group$End.Week-3 == min(vaccines_subset$Date))
-deaths_by_age_group$fullvc <- 0
 start_pos <- min(which(michigan_deaths$End.Week-3 == min(dates_match)))
 end_pos <- max(which(michigan_deaths$End.Week-3 == max(dates_match)))
 michigan_deaths$fullvc <- 0
