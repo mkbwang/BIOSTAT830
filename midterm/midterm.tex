@@ -1,0 +1,153 @@
+\documentclass[12pt]{article}
+\usepackage{paralist,amsmath,amssymb,thumbpdf,lmodern}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{physics}
+\usepackage{amsfonts}
+\usepackage{bbm}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{amsfonts}
+\usepackage{booktabs}
+\usepackage{diagbox}
+\usepackage[outdir=./]{epstopdf}
+\usepackage{caption}
+\usepackage{bm}
+\usepackage{makecell}
+\usepackage{ifxetex,ifluatex}
+\newcommand*\diff{\mathop{}\!\mathrm{d}}
+\begingroup\expandafter\expandafter\expandafter\endgroup
+\expandafter\ifx\csname IncludeInRelease\endcsname\relax
+  \usepackage{fixltx2e}
+\fi
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provides euro and other symbols
+\else % if luatex or xelatex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\usepackage{newtxtext,newtxmath}
+
+\title{Biostat 830 Midterm}
+\date{}
+\author{Mukai Wang 98830336}
+
+\makeatletter
+\newenvironment{breakablealgorithm}
+{% \begin{breakablealgorithm}
+		\begin{center}
+			\refstepcounter{algorithm}% New algorithm
+			\hrule height.8pt depth0pt \kern2pt% \@fs@pre for \@fs@ruled
+			\renewcommand{\caption}[2][\relax]{% Make a new \caption
+				{\raggedright\textbf{\fname@algorithm~\thealgorithm} ##2\par}%
+				\ifx\relax##1\relax % #1 is \relax
+				\addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##2}%
+				\else % #1 is not \relax
+				\addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##1}%
+				\fi
+				\kern2pt\hrule\kern2pt
+			}
+		}{% \end{breakablealgorithm}
+		\kern2pt\hrule\relax% \@fs@post for \@fs@ruled
+	\end{center}
+}
+\makeatother
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+
+\begin{document}
+\maketitle
+
+\section*{Problem 1}
+
+ 
+
+\section*{Problem 2}
+
+
+\begin{enumerate}[(a)]
+
+
+\item The SEIR model is
+
+\begin{align*}
+	\frac{\diff S}{\diff t} &= -\beta S \frac{I}{N}\\
+	\frac{\diff E}{\diff t} &= \beta S \frac{I}{N} - \delta E\\
+	\frac{\diff I}{\diff t} &= \delta E - \gamma I\\
+	\frac{\diff R}{\diff t} &= \gamma I
+\end{align*}
+
+in which $N=S+E+I+R$. According to the problem setting, $N=1000000$. On day zero, $S_{0}=999950$, $E_{0}=0$, $I_{0}=50$ and $R_{0}=0$. Because an individual who contracts th disease takes on average 3 days to become infectious, $\delta=1/3$ $\text{day}^{-1}$. Because an individual who is infectious takes on average 2 weeks to recover, $\gamma=1/14$ $\text{day}^{-1}$. Because the true reproduction number $R_{0}=10$, the true $\beta=R_{0} \gamma=5/7$ $\text{day}^{-1}$.
+
+When estimating the unknown $\beta$, I propose \emph{least squares} estimation. I define the search space for $\beta$ to range from 0.01 to 1. For each candidate value, I calculate the population structure trajectory. The least square estimator $\hat{\beta}_\text{ls}$ is the one that minimizes the sum of squares of errors between predicted $\hat{\bm{I}}$ trajectory and the observed $\bm{I}$ trajectory. The details are in Algorithm \ref{LS}.
+
+\begin{breakablealgorithm}
+	\caption{Least Squares Algorithm for Estimating Transmission Rate $\beta$ in SEIR Model}\label{LS}
+	\hspace*{\algorithmicindent} \textbf{Input} Number of follow up days $T$,  Population trajectory in \emph{susceptible} compartment $\bm{S}$, population trajectory in \emph{exposed} compartment $\bm{E}$, population trajectory in \emph{infectious} compartment $\bm{I}$, population trajectory in \emph{recovery} compartment $\bm{R}$, known transmission rates $\gamma$ and $\delta$
+	
+	\begin{algorithmic}[1]
+		\For{$i \gets 1$ to 100}
+		\State $\hat{\beta}_{i} \gets i/100$ \Comment{search for parameter values from 0.01 to 1}
+		\State $\hat{S}_{i,0} \gets S_{0}$ \Comment{Set initial values from observed data}
+		\State $\hat{E}_{i,0} \gets E_0$
+		\State $\hat{I}_{i,0} \gets I_{0}$
+		\State $\hat{R}_{i,0} \gets R_0$
+			\For{$j \gets 1$ to $T$}
+				\State Calculate $\hat{S}_{i,j}$, $\hat{E}_{i,j}$, $\hat{I}_{i,j}$, $\hat{R}_{i,j}$ from $\hat{S}_{i,j-1}$, $\hat{E}_{i,j-1}$, $\hat{I}_{i,j-1}$, $\hat{R}_{i,j-1}$ using Runge-Kutta algorithm.
+			\EndFor
+		\State $\text{SSE}_{i} \gets \sum_{j=1}^{T} (\hat{I}_{i,j} - I_{j})^2$
+		\EndFor
+		\State $\hat{\beta}_\text{ls} \gets \frac{1}{100}\underset{i}{\mathrm{argmin}}\text{SSE}_{i}$	
+	\end{algorithmic}
+	
+	\hspace*{\algorithmicindent} \textbf{Output} $\hat{\beta}_\text{ls}$
+\end{breakablealgorithm}
+
+	\item Following the algorithm specified in the previous question, I found out that $\hat{\beta}_\text{ls} = 0.71$. The estimation bias is $0.71 - 5/7 = -0.004$. The SSE plot against all $\beta$ values is in Figure \ref{p2}A.
+
+	
+	
+	\item To account for 10\% underreporting in the infectious compartment, I adjust the coefficients in the SEIR model
+	\begin{align*}
+	\frac{\diff S}{\diff t} &= -\frac{10}{9} \beta S \frac{I}{N}\\
+	\frac{\diff E}{\diff t} &= \frac{10}{9}\beta S \frac{I}{N} - \delta E\\
+	\frac{\diff I}{\diff t} &= \frac{9}{10}\delta E - \gamma I\\
+	\frac{\diff R}{\diff t} &= \frac{1}{10}\delta E + \gamma I
+	\end{align*}
+	
+	In this case $\hat{\beta}_\text{ls} = 0.70$. The estimation bias is $0.70 - 5/7 = -0.014$, which is almost the same as the scenario without underreporting. The slight adjustment in the SEIR model can adapt well to minor underreporting. The SSE plot against all $\beta$ values is in Figure \ref{p2}B.
+	
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[scale=0.7]{P2plot.pdf}
+		\caption{The sum of squares of error of the infectious compartment trajectory for $\beta$ ranging from 0.01 to 1. Panel A corresponds to the scenario with no underreporting. Panel B corresponds to the scenario with 10\% underreporting in the infectious compartment.}\label{p2}
+	\end{figure}
+\end{enumerate}
+
+
+
+
+\section*{Problem 3}
+
+
+
+
+
+\end{document}
