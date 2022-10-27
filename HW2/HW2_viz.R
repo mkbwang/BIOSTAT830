@@ -70,7 +70,7 @@ death_plot <- plot_grid(age_trajectory, sex_trajectory,
 death_by_age$age_group <- rep(c(0, 1, 2), each=132)
 
 write.csv(death_by_age,
-          "HW2/weekly_deaths_by_age.csv", row.names=FALSE)
+          "HW2/michigan_weekly_deaths_by_age.csv", row.names=FALSE)
 
 # michigan population: https://www.census.gov/quickfacts/MI
 
@@ -121,7 +121,7 @@ michigan_complete <- michigan_vaccine_percent %>% select(Date,
 
 michigan_complete[is.na(michigan_complete)] <- 0
 
-write.csv(michigan_complete, 'HW2/complete_vaccination.csv',
+write.csv(michigan_complete, 'HW2/michigan_complete_vaccination.csv',
           row.names=FALSE)
 
 michigan_onedose_long <- melt(michigan_onedose, id.vars="Date", variable.name="Age_Group", value.name="Percentage") %>%

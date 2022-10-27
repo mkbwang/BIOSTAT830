@@ -4,7 +4,7 @@ library(reshape2)
 library(cowplot)
 
 rm(list=ls())
-michigan_deaths <- read.csv(file.path('HW2', 'weekly_deaths_by_age.csv'))
+michigan_deaths <- read.csv(file.path('HW2', 'michigan_weekly_deaths_by_age.csv'))
 
 michigan_deaths$End.Week <- as.Date(michigan_deaths$End.Week, format="%Y-%m-%d")
 
@@ -30,7 +30,7 @@ michigan_deaths$population <- rep(c(2.14e6, 6.05e6, 1.81e6), 132)
 
 
 # load vaccine csv file
-michigan_vaccine <- read.csv(file.path('HW2', 'complete_vaccination.csv'))
+michigan_vaccine <- read.csv(file.path('HW2', 'michigan_complete_vaccination.csv'))
 michigan_vaccine$Date <- as.Date(michigan_vaccine$Date, format="%Y-%m-%d")
 michigan_vaccine <- michigan_vaccine[order(michigan_vaccine$Date), ]
 
