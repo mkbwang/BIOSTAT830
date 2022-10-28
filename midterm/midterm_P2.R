@@ -61,7 +61,7 @@ SSE_trajectory <- ggplot(SSE_df, aes(x=beta_hat, y=loss))+ geom_line() + geom_po
 
 
 initial_state_all <- c(S=1e6-50, E=0, I=50, OI=0,  R=0)
-initial_state_observed <- c(S=1e6-50, E=0, I=50,  R=0)
+
 
 uSEIR_generation_model <- function(t, state, parameters){
   with(as.list(c(state, parameters)),{
@@ -79,6 +79,8 @@ uSEIR_simulated_data <- rk4(y=initial_state_all,
                       func = uSEIR_generation_model,
                       parms=real_params)
 uSEIR_simulated_data <- round(uSEIR_simulated_data, digits=0)
+
+initial_state_observed <- c(S=1e6-50, E=0, I=50,  R=0)
 
 uSEIR_estimation_model <- function(t, state, parameters){
   with(as.list(c(state, parameters)),{

@@ -75,6 +75,7 @@
 \begin{document}
 \maketitle
 
+\emph{The R code for problem 2 and 3 is available in the appendix.}
 \section*{Problem 1}
 
 \begin{enumerate}[(a)]
@@ -122,8 +123,6 @@
 \end{enumerate}
 
 \section*{Problem 2}
-
-
 \begin{enumerate}[(a)]
 
 
@@ -140,8 +139,8 @@ According to the problem setting, $N=1000000$. On day zero, $S_{0}=999950$, $E_{
 
 When estimating the unknown $\beta$, I propose \emph{least squares} estimation. I define the search space for $\beta$ to range from 0.01 to 1. For each candidate value, I calculate the population structure trajectory. The least square estimator $\hat{\beta}_\text{ls}$ is the one that minimizes the sum of squares of errors between predicted $\hat{\bm{I}}$ trajectory and the observed $\bm{I}$ trajectory. The details are in Algorithm \ref{LS}.
 
-\newpage
-\begin{breakablealgorithm}
+
+\begin{algorithm}[htbp]
 	\caption{Least Squares Algorithm for Estimating Transmission Rate $\beta$ in SEIR Model}\label{LS}
 	\hspace*{\algorithmicindent} \textbf{Input} Number of follow up days $T$,  Population trajectory in \emph{susceptible} compartment $\bm{S}$, population trajectory in \emph{exposed} compartment $\bm{E}$, population trajectory in \emph{infectious} compartment $\bm{I}$, population trajectory in \emph{recovery} compartment $\bm{R}$, known transmission rates $\gamma$ and $\delta$
 	
@@ -161,9 +160,9 @@ When estimating the unknown $\beta$, I propose \emph{least squares} estimation. 
 	\end{algorithmic}
 	
 	\hspace*{\algorithmicindent} \textbf{Output} $\hat{\beta}_\text{ls}$
-\end{breakablealgorithm}
+\end{algorithm}
 
-	\item Following the algorithm specified in the previous question, I found out that $\hat{\beta}_\text{ls} = 0.71$. The estimation bias is $0.71 - 5/7 = -0.004$. The SSE plot against all $\beta$ values is in Figure \ref{p2}A.
+	\item Following the algorithm specified in the previous question, I found out that $\hat{\beta}_\text{ls} = 0.71$. The estimation bias is $0.71 - 5/7 = -0.004$. 
 
 	
 	
@@ -175,18 +174,12 @@ When estimating the unknown $\beta$, I propose \emph{least squares} estimation. 
 	\frac{\diff R}{\diff t} &= \frac{1}{10}\delta E + \gamma I
 	\end{align*}
 	
-	In this case $\hat{\beta}_\text{ls} = 0.70$. The estimation bias is $0.70 - 5/7 = -0.014$, which is almost the same as the scenario without underreporting. The slight adjustment in the SEIR model can adapt well to minor underreporting. The SSE plot against all $\beta$ values is in Figure \ref{p2}B.
+	In this case $\hat{\beta}_\text{ls} = 0.70$. The estimation bias is $0.70 - 5/7 = -0.014$, which is almost the same as the scenario without underreporting. The slight adjustment in the SEIR model can adapt well to minor underreporting. 
 	
-	\begin{figure}[htbp]
-		\centering
-		\includegraphics[scale=0.7]{P2plot.pdf}
-		\caption{The sum of squares of error of the infectious compartment trajectory for $\beta$ ranging from 0.01 to 1. Panel A corresponds to the scenario with no underreporting. Panel B corresponds to the scenario with 10\% underreporting in the infectious compartment.}\label{p2}
-	\end{figure}
+	
 \end{enumerate}
 
 
-
-\newpage
 \section*{Problem 3}
 
 \begin{enumerate}[(a)]
@@ -194,7 +187,7 @@ When estimating the unknown $\beta$, I propose \emph{least squares} estimation. 
 \item The dataset contains 133 consecutive weeks of information starting from 3/7/2020. There are four knots for linear splines of time. The dates of the knots are 12/14/2020(week 41), 6/26/2021(week 69), 11/29/2021(week 91) and 5/22/2022(week 116). The age-specific translational Poisson log-linear model can be written as
 \begin{align}
 	\log(Y_{i, t}) &= \beta_{i0}+\beta_{i1}\log(Y_{i, t-1})+ \gamma_i v_{i, t} + \label{formulap3a} \\
-	&\qquad \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t \geq 41) + \alpha_{2}\mathbb{I}(t \geq 69) +\alpha_{3} \mathbb{I}(t \geq 91) + \alpha_{4}\mathbb{I}(t \geq 116)\right)t	\nonumber
+	&\qquad \left(\alpha_{i0} + \alpha_{i1}\mathbb{I}(t \geq 41) + \alpha_{i2}\mathbb{I}(t \geq 69) +\alpha_{i3} \mathbb{I}(t \geq 91) + \alpha_{i4}\mathbb{I}(t \geq 116)\right)t	\nonumber
 \end{align}
 
  $i=0$ represents the 18-64 age group. $i=1$ represents 65+ age group. I denote time as consecutive integers from 0 to 132. There are 132 data points for the translational Poisson log-linear model above($t=1,2,\cdots 132$). $Y_{i,t}$ stands for the number of deaths in week $t$ for age group $i$. To avoid ill-defined log transformation on zero, I add one to all the observed death counts. $v_{i,t}$ stands for the cumulative vaccination rate for age group $i$ at week $t$.
@@ -225,7 +218,7 @@ The regression results are summarized in Table \ref{P3a}. Because the P value fo
 			
 			\bottomrule
 		\end{tabular}
-		\caption{Parameter estimates of translational Poisson log linear regression. Model \ref{P3a} is fit separately for two age groups(18-64 and 65+). Coefficients with $\star$ indicates that their P values are smaller than 0.05. }\label{P3a}
+		\caption{Estimated effect sizes of translational Poisson log linear regression on weekly death counts. Model \ref{P3a} is fit separately for two age groups(18-64 and 65+). Coefficients with $\star$ indicate that their P values are smaller than 0.05. }\label{P3a}
 \end{table}
 
 \item 
@@ -236,7 +229,7 @@ In this subquestion I aggregate the death counts from both age groups to fit one
 	&\qquad \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t \geq 41) + \alpha_{2}\mathbb{I}(t \geq 69) +\alpha_{3} \mathbb{I}(t \geq 91) + \alpha_{4}\mathbb{I}(t \geq 116)\right)t	\nonumber
 \end{align}
 
-There are three differences between model \ref{formulap3b} and model \ref{formulap3a}. The first is that I need to include the total population size of two age groups as offsets. There are about $N_{0}=6.05$ million people in the 18-64 age group and $N_{1}=1.81$ million people in the 65+ age group. The second is that the coefficients for autoregressive terms($\beta_{0}$, $\beta_{1}$) and time trends($\alpha_0$, $\alpha_1$, $\alpha_2$, $\alpha_3$, $\alpha_4$) are shared between two age groups. I also adjust the parametrization for the effect of vaccination. $\delta_0$ denotes the difference in the effect of full vaccination rate between the two populations. The estimates for $\gamma_0$ and $\delta_0$ are summarized in column 1 of Table \ref{P3bc}. Because $\gamma_0 = 1.60$ with a P value smaller than 0.05, indicating that full vaccination rate had worse impact on mortality of 65+ population than 18-64 population. This observation is the same as the previous question.
+There are three differences between model \ref{formulap3b} and model \ref{formulap3a}. The first is that I need to include the total population size of two age groups as offsets. There are about $N_{0}=6.05$ million people in the 18-64 age group and $N_{1}=1.81$ million people in the 65+ age group. The second is that the coefficients for autoregressive terms($\beta_{0}$, $\beta_{1}$) and time trends($\alpha_0$, $\alpha_1$, $\alpha_2$, $\alpha_3$, $\alpha_4$) are shared between two age groups. I also adjust the parametrization for the effect of vaccination. $\delta_0$ denotes the difference in the effect of full vaccination rate between the two populations. The estimates for $\gamma_0$ and $\delta_0$ are summarized in column 1 of Table \ref{P3bc}. $\hat{\gamma}_0 = 1.60$ with a P value smaller than 0.05, indicating that full vaccination rate had worse impact on mortality of 65+ population than 18-64 population. This conclusion is the same as the previous question.
 
 
 \item We build upon model \ref{formulap3b} and add two cumulative vaccination rate lags. The model is
@@ -244,7 +237,7 @@ There are three differences between model \ref{formulap3b} and model \ref{formul
 	\log(\frac{Y_{i, t}}{N_{i}}) &= \beta_{0}+\beta_{1}\log(Y_{i, t-1})+ (\gamma_{0} + \delta_{0}i) v_{i, t} + (\gamma_{1} + \delta_{1}i) v_{i, t-1} + (\gamma_{2} + \delta_{2}i) v_{i, t-2} + \label{formulap3c} \\
 	&\qquad \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t \geq 41) + \alpha_{2}\mathbb{I}(t \geq 69) +\alpha_{3} \mathbb{I}(t \geq 91) + \alpha_{4}\mathbb{I}(t \geq 116)\right)t	\nonumber
 \end{align}
-The estimates of $\gamma_0$, $\delta_0$, $\gamma_1$, $\delta_1$, $\gamma_2$ are in the second column of Table \ref{P3bc}. $\delta_2$ is not estimable because of singularities. $\hat{\delta}_0=4.60$, $\hat{\gamma}_1=-6.32$ and $\hat{\gamma}_2=5.90$ are significantly different from zero. It's worth noting that the full vaccination rate lags are correlated with mortality while the current full vaccination rate isn't. It's also curious that the  effect size of vaccination rate at lag 1 is negative while the effect size of vaccination rate at lag 2 is positive.
+The estimates of $\gamma_0$, $\delta_0$, $\gamma_1$, $\delta_1$, $\gamma_2$ are in the second column of Table \ref{P3bc}. $\delta_2$ is not estimable because of numerical singularities. $\hat{\delta}_0=4.60$, $\hat{\gamma}_1=-6.32$ and $\hat{\gamma}_2=5.90$ are significantly different from zero. It's worth noting that the full vaccination rate lags are correlated with mortality while the current full vaccination rate isn't. It's also curious that the  effect size of vaccination rate at lag 1 is negative while the effect size of vaccination rate at lag 2 is positive. This indicates that death rates were negatively associated with recent increase in full vaccination rates.
 
 \begin{table}[htbp]
 		\centering
@@ -265,10 +258,10 @@ The estimates of $\gamma_0$, $\delta_0$, $\gamma_1$, $\delta_1$, $\gamma_2$ are 
 			$\delta_2$ & - & - &  \makecell{Difference of Effect Size \\ between two age groups}\\
 			\bottomrule
 		\end{tabular}
-		\caption{The effect sizes related to fully vaccination rates  of Translational Poisson log linear regression. The first column corresponds to model \ref{formulap3b} without any lags. The second column corresponds to model \ref{formulap3c} with two lags. Coefficients with $\star$ indicates that their P values are smaller than 0.05. There is no estimate for $\delta_2$ because of singularity issues.}\label{P3bc}
+		\caption{Estimated  effect sizes related to cumulative full vaccination rates  of translational Poisson log linear regression on death rates. The first column corresponds to model \ref{formulap3b} without any lags. The second column corresponds to model \ref{formulap3c} with two lags. Coefficients with $\star$ indicate that their P values are smaller than 0.05. There is no estimate for $\delta_2$ because of singularity issues.}\label{P3bc}
 \end{table}
 
-\item I can fit multiple models with different number of lags and compare the AIC of each Poisson regression model. Models with the lowest AIC is my preferred model.
+\item I can fit multiple models with different number of lags and compare the AIC of all Poisson regressions. The model with the lowest AIC is my preferred model.
 \end{enumerate}
 
 

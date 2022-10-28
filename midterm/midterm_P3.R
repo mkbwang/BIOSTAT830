@@ -14,7 +14,7 @@ delta <- michigan_deaths$date > knot2
 omicron1 <- michigan_deaths$date > knot3
 omicron2 <- michigan_deaths$date > knot4
 
-michigan_deaths$vaccination <- as.numeric(vaccine_available)
+michigan_deaths$vavailable <- as.numeric(vaccine_available)
 michigan_deaths$delta <- as.numeric(delta)
 michigan_deaths$omicron1 <- as.numeric(omicron1)
 michigan_deaths$omicron2 <- as.numeric(omicron2)
@@ -32,7 +32,7 @@ adults_lag1$loglagdeath  <- log(adults$deaths[1:132] + 1)
 adults_lag1$totpop <- 6.05e6
 
 poi_model1_adults <- glm(deaths ~ loglagdeath + vaccine_prop_complete + date+
-                         I(vaccination * date) +
+                         I(vavailable * date) +
                          I(delta * date) +
                          I(omicron1 * date) +
                          I(omicron2 * date)  ,
@@ -50,7 +50,7 @@ senior_lag1$totpop <- 1.81e6
 
 model1_senior <- glm(deaths ~ loglagdeath+
                        vaccine_prop_complete+ date+
-                       I(vaccination * date) +
+                       I(vavailable * date) +
                        I(delta * date) +
                        I(omicron1 * date) +
                        I(omicron2 * date),
@@ -64,7 +64,7 @@ combined_data$agegroup <- as.numeric(combined_data$age == "65+")
 model2 <- glm(deaths ~ offset(log(totpop)) + loglagdeath+
                 vaccine_prop_complete+ I(agegroup * vaccine_prop_complete)+
                 date+
-                I(vaccination * date) +
+                I(vavailable * date) +
                 I(delta * date) +
                 I(omicron1 * date) +
                 I(omicron2 * date),
@@ -72,7 +72,7 @@ model2 <- glm(deaths ~ offset(log(totpop)) + loglagdeath+
 
 # Q3C
 
-## vaccination rate lag
+## vavailable rate lag
 
 adults_lag2 <- adults_lag1[2:132, ]
 adults_lag2$vclag1 <- adults_lag1$vaccine_prop_complete[1:131]
@@ -91,7 +91,7 @@ model3 <- glm(deaths ~ offset(log(totpop)) + loglagdeath+
                 vclag1 + I(agegroup*vclag1)+
                 vclag2 + I(agegroup*vclag2)+
                 date+
-                I(vaccination * date) +
+                I(vavailable * date) +
                 I(delta * date) +
                 I(omicron1 * date) +
                 I(omicron2 * date),
