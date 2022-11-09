@@ -10,4 +10,4 @@
 .Rhistory
 *.xlsx
 *.csv
-
+*.RDS

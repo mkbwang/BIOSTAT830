@@ -1,0 +1,268 @@
+\documentclass[12pt]{article}
+\usepackage{paralist,amsmath,amssymb,thumbpdf,lmodern}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{physics}
+\usepackage{amsfonts}
+\usepackage{bbm}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{amsfonts}
+\usepackage{booktabs}
+\usepackage{diagbox}
+\usepackage[outdir=./]{epstopdf}
+\usepackage{caption}
+\usepackage{bm}
+\usepackage{makecell}
+\usepackage{ifxetex,ifluatex}
+\newcommand*\diff{\mathop{}\!\mathrm{d}}
+\begingroup\expandafter\expandafter\expandafter\endgroup
+\expandafter\ifx\csname IncludeInRelease\endcsname\relax
+  \usepackage{fixltx2e}
+\fi
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provides euro and other symbols
+\else % if luatex or xelatex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\usepackage{newtxtext,newtxmath}
+
+\title{Biostat 830 Midterm}
+\date{}
+\author{Mukai Wang 98830336}
+
+\makeatletter
+\newenvironment{breakablealgorithm}
+{% \begin{breakablealgorithm}
+		\begin{center}
+			\refstepcounter{algorithm}% New algorithm
+			\hrule height.8pt depth0pt \kern2pt% \@fs@pre for \@fs@ruled
+			\renewcommand{\caption}[2][\relax]{% Make a new \caption
+				{\raggedright\textbf{\fname@algorithm~\thealgorithm} ##2\par}%
+				\ifx\relax##1\relax % #1 is \relax
+				\addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##2}%
+				\else % #1 is not \relax
+				\addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##1}%
+				\fi
+				\kern2pt\hrule\kern2pt
+			}
+		}{% \end{breakablealgorithm}
+		\kern2pt\hrule\relax% \@fs@post for \@fs@ruled
+	\end{center}
+}
+\makeatother
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+
+\begin{document}
+\maketitle
+
+\emph{The R code for problem 2 and 3 is available in the appendix.}
+\section*{Problem 1}
+
+\begin{enumerate}[(a)]
+	\item 
+	\begin{align*}
+		\sum_{y=0}^{\infty}P\left(\left.Y=y \right\vert \pi, \mu\right) &= \pi + (1-\pi) e^{-\mu} + \sum_{y=1}^{\infty}(1-\pi)\frac{\mu^{y}}{y!}e^{-\mu}\\
+		&= \pi + (1-\pi)\sum_{y=0}^{\infty}(1-\pi)\frac{\mu^{y}}{y!}e^{-\mu}\\
+		&=\pi+1-\pi=1
+	\end{align*}
+	Because all the values add up to be one, the defined zero inflated Poisson distribution is a valid probability mass function.
+	
+	\item When $\pi=0$, 
+	$P\left(\left.Y=0 \right\vert \pi, \mu\right) = e^{-\mu} = \frac{\mu^{0}}{0!}e^{-\mu}$
+	
+	For $y\geq 1$, $P\left(\left.Y=y \right\vert \pi, \mu\right) = \frac{\mu^{y}}{y!}e^{-\mu}$. This is exactly the form of Poisson distribution with mean $\mu$.
+	\item 
+	\begin{align*}
+		E(Y) &= \sum_{y=0}^{\infty}P\left(\left.Y=y \right\vert \pi, \mu\right) y\\
+		&= \pi \cdot 0 + (1-\pi) \sum_{y=0}^{\infty}y\cdot \frac{\mu^{y}}{y!}e^{-\mu}\\
+		&= (1-\pi)\mu
+	\end{align*}
+	\begin{align*}
+	    V(Y) &= E(Y^2) - E^2(Y)\\
+		&= \pi \cdot 0 + (1-\pi) \sum_{y=0}^{\infty}y^2 \cdot \frac{\mu^{y}}{y!}e^{-\mu} - (1-\pi)^2\mu^2\\
+		&=(1-\pi)(\mu+\mu^2) - (1-\pi)^2\mu^2\\
+		&= (1-\pi)\mu(1+\pi\mu)
+	\end{align*}
+	Thus $E(Y) = (1-\pi)\mu$ and $V(Y) = (1-\pi)\mu(1+\pi\mu)$
+	\item Given that $\mu \sim Ga(\kappa, \theta)$, $f(\mu;\kappa, \theta)= \frac{1}{\Gamma(\kappa)\theta^{\kappa}}\mu^{\kappa-1}\cdot e^{-\mu/\theta}$. We have
+	\[E(\mu)=\kappa\theta\qquad V(\mu)=\kappa\theta^2\qquad E(\mu^2) = (\kappa^2 + \kappa)\theta^2 \]
+	Therefore the marginal mean is
+	\begin{align*}
+		E(Y) &= E\left(E\left(\left.Y\right\vert \mu\right)\right)\\
+		&= E\left((1-\pi) \mu\right)\\
+		&= (1-\pi)\kappa\theta
+	\end{align*}
+	The marginal variance is
+	\begin{align*}
+		V(Y) &= V\left(E\left(\left.Y\right\vert \mu\right)\right) + E\left(V\left(\left.Y\right\vert \mu\right)\right)\\
+		&=V\left((1-\pi)\mu\right) + E\left((1-\pi)\mu(1+\pi\mu)\right)\\
+		&=(1-\pi)^2 \kappa\theta^2 + (1-\pi)\kappa\theta + (1-\pi)\pi(\kappa^2+\kappa)\theta^2\\
+		&= (1-\pi)\kappa\theta + (1-\pi)\kappa(1+\pi\kappa)\theta^2
+	\end{align*}
+	Therefore $E(Y)=(1-\pi)\kappa\theta$ and $V(Y)=(1-\pi)\kappa\theta + (1-\pi)\kappa(1+\pi\kappa)\theta^2$.
+\end{enumerate}
+
+\section*{Problem 2}
+\begin{enumerate}[(a)]
+
+
+\item The SEIR model is
+
+\begin{align*}
+	\frac{\diff S}{\diff t} &= -\beta S \frac{I}{N}\\
+	\frac{\diff E}{\diff t} &= \beta S \frac{I}{N} - \delta E\\
+	\frac{\diff I}{\diff t} &= \delta E - \gamma I\\
+	\frac{\diff R}{\diff t} &= \gamma I
+\end{align*}
+
+According to the problem setting, $N=1000000$. On day zero, $S_{0}=999950$, $E_{0}=0$, $I_{0}=50$ and $R_{0}=0$. Because an infected individual takes on average 3 days to become infectious, $\delta=1/3$ $\text{day}^{-1}$. Because an individual who is infectious takes on average 2 weeks to recover, $\gamma=1/14$ $\text{day}^{-1}$. Because the true reproduction number $R_{0}=10$, the true $\beta=R_{0} \gamma=5/7$ $\text{day}^{-1}$.
+
+When estimating the unknown $\beta$, I propose \emph{least squares} estimation. I define the search space for $\beta$ to range from 0.01 to 1. For each candidate value, I calculate the population structure trajectory. The least square estimator $\hat{\beta}_\text{ls}$ is the one that minimizes the sum of squares of errors between predicted $\hat{\bm{I}}$ trajectory and the observed $\bm{I}$ trajectory. The details are in Algorithm \ref{LS}.
+
+
+\begin{algorithm}[htbp]
+	\caption{Least Squares Algorithm for Estimating Transmission Rate $\beta$ in SEIR Model}\label{LS}
+	\hspace*{\algorithmicindent} \textbf{Input} Number of follow up days $T$,  Population trajectory in \emph{susceptible} compartment $\bm{S}$, population trajectory in \emph{exposed} compartment $\bm{E}$, population trajectory in \emph{infectious} compartment $\bm{I}$, population trajectory in \emph{recovery} compartment $\bm{R}$, known transmission rates $\gamma$ and $\delta$
+	
+	\begin{algorithmic}[1]
+		\For{$i \gets 1$ to 100}
+		\State $\hat{\beta}_{i} \gets i/100$ \Comment{search for parameter values from 0.01 to 1}
+		\State $\hat{S}_{i,0} \gets S_{0}$ \Comment{Set initial values from observed data}
+		\State $\hat{E}_{i,0} \gets E_0$
+		\State $\hat{I}_{i,0} \gets I_{0}$
+		\State $\hat{R}_{i,0} \gets R_0$
+			\For{$j \gets 1$ to $T$}
+				\State Calculate $\hat{S}_{i,j}$, $\hat{E}_{i,j}$, $\hat{I}_{i,j}$, $\hat{R}_{i,j}$ from $\hat{S}_{i,j-1}$, $\hat{E}_{i,j-1}$, $\hat{I}_{i,j-1}$, $\hat{R}_{i,j-1}$ using Runge-Kutta algorithm.
+			\EndFor
+		\State $\text{SSE}_{i} \gets \sum_{j=1}^{T} (\hat{I}_{i,j} - I_{j})^2$
+		\EndFor
+		\State $\hat{\beta}_\text{ls} \gets \frac{1}{100}\underset{i}{\mathrm{argmin}}\text{SSE}_{i}$	
+	\end{algorithmic}
+	
+	\hspace*{\algorithmicindent} \textbf{Output} $\hat{\beta}_\text{ls}$
+\end{algorithm}
+
+	\item Following the algorithm specified in the previous question, I found out that $\hat{\beta}_\text{ls} = 0.71$. The estimation bias is $0.71 - 5/7 = -0.004$. 
+
+	
+	
+	\item To account for 10\% underreporting in the infectious compartment, I adjust the coefficients in the SEIR model
+	\begin{align*}
+	\frac{\diff S}{\diff t} &= -\frac{10}{9} \beta S \frac{I}{N}\\
+	\frac{\diff E}{\diff t} &= \frac{10}{9}\beta S \frac{I}{N} - \delta E\\
+	\frac{\diff I}{\diff t} &= \frac{9}{10}\delta E - \gamma I\\
+	\frac{\diff R}{\diff t} &= \frac{1}{10}\delta E + \gamma I
+	\end{align*}
+	
+	In this case $\hat{\beta}_\text{ls} = 0.70$. The estimation bias is $0.70 - 5/7 = -0.014$, which is almost the same as the scenario without underreporting. The slight adjustment in the SEIR model can adapt well to minor underreporting. 
+	
+	
+\end{enumerate}
+
+
+\section*{Problem 3}
+
+\begin{enumerate}[(a)]
+
+\item The dataset contains 133 consecutive weeks of information starting from 3/7/2020. There are four knots for linear splines of time. The dates of the knots are 12/14/2020(week 41), 6/26/2021(week 69), 11/29/2021(week 91) and 5/22/2022(week 116). The age-specific translational Poisson log-linear model can be written as
+\begin{align}
+	\log(Y_{i, t}) &= \beta_{i0}+\beta_{i1}\log(Y_{i, t-1})+ \gamma_i v_{i, t} + \label{formulap3a} \\
+	&\qquad \left(\alpha_{i0} + \alpha_{i1}\mathbb{I}(t \geq 41) + \alpha_{i2}\mathbb{I}(t \geq 69) +\alpha_{i3} \mathbb{I}(t \geq 91) + \alpha_{i4}\mathbb{I}(t \geq 116)\right)t	\nonumber
+\end{align}
+
+ $i=0$ represents the 18-64 age group. $i=1$ represents 65+ age group. I denote time as consecutive integers from 0 to 132. There are 132 data points for the translational Poisson log-linear model above($t=1,2,\cdots 132$). $Y_{i,t}$ stands for the number of deaths in week $t$ for age group $i$. To avoid ill-defined log transformation on zero, I add one to all the observed death counts. $v_{i,t}$ stands for the cumulative vaccination rate for age group $i$ at week $t$.
+ 
+The regression results are summarized in Table \ref{P3a}. Because the P value for $\gamma_0$ is larger than 0.05, there isn't significant association between log death counts and cumulative vaccination rates for people in 18-64 age group. Because $\hat{\gamma}_1 =0.194$ and its P value is smaller than 0.05, the death counts were increasing as the cumulative vaccination rate increased for 65+ age group. The vaccination didn't reduce the mortality rate in either age group.
+
+\begin{table}[htbp]
+		\centering
+		\begin{tabular}{cccc}
+			\toprule
+			Coefficient & \makecell{18-64 Age Group($i=0$)} & \makecell{65+ Age Group($i=1$)} &  Meaning\\
+			\midrule
+			$\beta_{i0}$ & $0.283^\star$ & $0.464^\star$ & Intercept\\
+			\addlinespace[0.2cm]
+			$\beta_{i1}$ & $0.945^\star$ & $0.928^\star$ &  \makecell{Autoregressive Coefficient \\ for previous week deaths}\\
+			\addlinespace[0.2cm]
+			$\gamma_{i}$ & $-0.062$ & $0.194^\star$ &  \makecell{Effect size of \\fully vaccination rate}\\
+			\addlinespace[0.2cm] 
+			$\alpha_{i0}$ & $1.2\times 10^{-3}$ & $2.2\times 10^{-3\star}$ &   \makecell{Average decrease per week \\ of log Deaths}\\
+			\addlinespace[0.2cm]
+			$\alpha_{i1}$ & $-2.5\times 10^{-3\star}$ & $-6.4\times 10^{-3\star}$ &  \makecell{Change in decrease rate \\ of log deaths\\ after Dec 14, 2020}\\
+			\addlinespace[0.2cm]
+			$\alpha_{i2}$ & $2.8\times 10^{-3\star}$ & $2.9\times 10^{-3\star}$ &  \makecell{Change in decrease rate \\ of log deaths\\ after June 26, 2021}\\
+			\addlinespace[0.2cm]
+			$\alpha_{i3}$ & $-1.9\times 10^{-3\star}$ & $-1.4\times 10^{-3\star}$ & \makecell{Change in decrease rate \\ of log deaths\\ after Nov 29, 2021}\\
+			\addlinespace[0.2cm]
+			$\alpha_{i4}$ & $-3.8\times 10^{-4}$ & $2.3\times 10^{-4}$ &  \makecell{Change in decrease rate \\ of log deaths \\ after May 22, 2022}\\
+			
+			\bottomrule
+		\end{tabular}
+		\caption{Estimated effect sizes of translational Poisson log linear regression on weekly death counts. Model \ref{P3a} is fit separately for two age groups(18-64 and 65+). Coefficients with $\star$ indicate that their P values are smaller than 0.05. }\label{P3a}
+\end{table}
+
+\item 
+
+In this subquestion I aggregate the death counts from both age groups to fit one single model. The model setup is
+\begin{align}
+	\log(\frac{Y_{i, t}}{N_{i}}) &= \beta_{0}+\beta_{1}\log(Y_{i, t-1})+ (\gamma_{0} + \delta_{0}i) v_{i, t} + \label{formulap3b} \\
+	&\qquad \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t \geq 41) + \alpha_{2}\mathbb{I}(t \geq 69) +\alpha_{3} \mathbb{I}(t \geq 91) + \alpha_{4}\mathbb{I}(t \geq 116)\right)t	\nonumber
+\end{align}
+
+There are three differences between model \ref{formulap3b} and model \ref{formulap3a}. The first is that I need to include the total population size of two age groups as offsets. There are about $N_{0}=6.05$ million people in the 18-64 age group and $N_{1}=1.81$ million people in the 65+ age group. The second is that the coefficients for autoregressive terms($\beta_{0}$, $\beta_{1}$) and time trends($\alpha_0$, $\alpha_1$, $\alpha_2$, $\alpha_3$, $\alpha_4$) are shared between two age groups. I also adjust the parametrization for the effect of vaccination. $\delta_0$ denotes the difference in the effect of full vaccination rate between the two populations. The estimates for $\gamma_0$ and $\delta_0$ are summarized in column 1 of Table \ref{P3bc}. $\hat{\gamma}_0 = 1.60$ with a P value smaller than 0.05, indicating that full vaccination rate had worse impact on mortality of 65+ population than 18-64 population. This conclusion is the same as the previous question.
+
+
+\item We build upon model \ref{formulap3b} and add two cumulative vaccination rate lags. The model is
+\begin{align}
+	\log(\frac{Y_{i, t}}{N_{i}}) &= \beta_{0}+\beta_{1}\log(Y_{i, t-1})+ (\gamma_{0} + \delta_{0}i) v_{i, t} + (\gamma_{1} + \delta_{1}i) v_{i, t-1} + (\gamma_{2} + \delta_{2}i) v_{i, t-2} + \label{formulap3c} \\
+	&\qquad \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t \geq 41) + \alpha_{2}\mathbb{I}(t \geq 69) +\alpha_{3} \mathbb{I}(t \geq 91) + \alpha_{4}\mathbb{I}(t \geq 116)\right)t	\nonumber
+\end{align}
+The estimates of $\gamma_0$, $\delta_0$, $\gamma_1$, $\delta_1$, $\gamma_2$ are in the second column of Table \ref{P3bc}. $\delta_2$ is not estimable because of numerical singularities. $\hat{\delta}_0=4.60$, $\hat{\gamma}_1=-6.32$ and $\hat{\gamma}_2=5.90$ are significantly different from zero. It's worth noting that the full vaccination rate lags are correlated with mortality while the current full vaccination rate isn't. It's also curious that the  effect size of vaccination rate at lag 1 is negative while the effect size of vaccination rate at lag 2 is positive. This indicates that death rates were negatively associated with recent increase in full vaccination rates.
+
+\begin{table}[htbp]
+		\centering
+		\begin{tabular}{cccc}
+			\toprule
+			Coefficient & \makecell{Model Without  Full \\ Vaccination Rate Lag} & \makecell{Model With  Full \\ Vaccination Rate Lag} &  Meaning\\
+			\midrule
+			$\gamma_0$ & $-0.97$ & $-0.53$ & \makecell{Effect size of \\fully vaccination rate\\ for age group 18-64}\\
+			\addlinespace[0.2cm]
+			$\delta_0$ & $1.60^\star$ & $4.60^\star$ &  \makecell{Difference of Effect Size \\ between two age groups}\\
+			\addlinespace[0.2cm]
+			$\gamma_1$ & - & $-6.32^\star$ &  \makecell{Effect size of \\Lag 1 vaccination rate\\ for age group 18-64}\\
+			\addlinespace[0.2cm] 
+			$\delta_1$ & - & $-3.08$ &   \makecell{Difference of Effect Size \\ between two age groups}\\
+			\addlinespace[0.2cm]
+			$\gamma_2$ & - & $5.90^\star$ &  \makecell{Effect size of \\Lag 2 vaccination rate\\ for age group 18-64}\\
+			\addlinespace[0.2cm]
+			$\delta_2$ & - & - &  \makecell{Difference of Effect Size \\ between two age groups}\\
+			\bottomrule
+		\end{tabular}
+		\caption{Estimated  effect sizes related to cumulative full vaccination rates  of translational Poisson log linear regression on death rates. The first column corresponds to model \ref{formulap3b} without any lags. The second column corresponds to model \ref{formulap3c} with two lags. Coefficients with $\star$ indicate that their P values are smaller than 0.05. There is no estimate for $\delta_2$ because of singularity issues.}\label{P3bc}
+\end{table}
+
+\item I can fit multiple models with different number of lags and compare the AIC of all Poisson regressions. The model with the lowest AIC is my preferred model.
+\end{enumerate}
+
+
+\end{document}
