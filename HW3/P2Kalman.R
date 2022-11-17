@@ -70,11 +70,12 @@ data$Ms <- ms
 
 values <- c(data$Theta, data$Mf, data$Ms)
 time <- rep(seq(1, 100), 3)
-Type <- rep(c("True", "KM Filter", "KM Smoother"), each=100)
+Type <- rep(c("True", "Kalman Filter", "Kalman Smoother"), each=100)
 result <- data.frame(time, values, Type)
 
-ggplot(result, aes(x=time, y=values, color=Type)) + geom_point(alpha=0.5) +
-  geom_line(alpha=0.5) +xlab("Time") + ylab("Theta")
+ggplot(result, aes(x=time, y=values)) + geom_point(alpha=0.5) +
+  geom_line(alpha=0.5) +xlab("Time") + ylab("Theta") +
+  facet_wrap(~Type, ncol=1) + theme_bw()
 
 #cat("solving S ... ")
 
