@@ -1,0 +1,221 @@
+\documentclass[12pt]{article}
+\usepackage{paralist,amsmath,amssymb,thumbpdf,lmodern}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{physics}
+\usepackage{amsfonts}
+\usepackage{bbm}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{amsfonts}
+\usepackage{booktabs}
+\usepackage{diagbox}
+\usepackage[outdir=./]{epstopdf}
+\usepackage{caption}
+\usepackage{bm}
+\usepackage{makecell}
+\usepackage{ifxetex,ifluatex}
+\newcommand*\diff{\mathop{}\!\mathrm{d}}
+\begingroup\expandafter\expandafter\expandafter\endgroup
+\expandafter\ifx\csname IncludeInRelease\endcsname\relax
+  \usepackage{fixltx2e}
+\fi
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provides euro and other symbols
+\else % if luatex or xelatex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\usepackage{newtxtext,newtxmath}
+
+\title{Biostat 830 HW3}
+\date{}
+\author{Mukai Wang 98830336}
+
+\makeatletter
+\newenvironment{breakablealgorithm}
+{% \begin{breakablealgorithm}
+		\begin{center}
+			\refstepcounter{algorithm}% New algorithm
+			\hrule height.8pt depth0pt \kern2pt% \@fs@pre for \@fs@ruled
+			\renewcommand{\caption}[2][\relax]{% Make a new \caption
+				{\raggedright\textbf{\fname@algorithm~\thealgorithm} ##2\par}%
+				\ifx\relax##1\relax % #1 is \relax
+				\addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##2}%
+				\else % #1 is not \relax
+				\addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##1}%
+				\fi
+				\kern2pt\hrule\kern2pt
+			}
+		}{% \end{breakablealgorithm}
+		\kern2pt\hrule\relax% \@fs@post for \@fs@ruled
+	\end{center}
+}
+\makeatother
+
+
+\begin{document}
+\maketitle
+
+\section*{Problem 1}
+
+\begin{enumerate}[(a)]
+
+\item  The Poisson Gamma process sets up the observed counts $Y_t$ and hidden state $\theta_t$, $\left.Y_t\right\vert\theta_t \sim \text{Poisson}(a_t \theta_t)$. For all time points $t=0,1,2,\cdots, T$, marginally $\theta_t \sim \text{Gamma}(\lambda, 1/\lambda)$ which means $E[\theta_t] = 1$, $\text{Var}(\theta_t)=1/\lambda$. The $\{\theta_t \}_{t=1,2,\cdots T}$ follows an AR(1) model $\theta_t = B_t \theta_{t-1}+\varepsilon_t$. $B_t \stackrel{iid}{\sim} \text{Beta}(\rho\lambda, (1-\rho)\lambda)$ and $\varepsilon_{t} \stackrel{iid}{\sim} \text{Gamma}((1-\rho)\lambda, 1/\lambda)$. Therefore $E[B_t] = \rho$ and $\text{Var}(B_t) = \frac{\rho (1-\rho)}{\lambda + 1}$. $\mathbb{E}[\varepsilon_t] = 1-\rho$ and $\text{Var}(\varepsilon_t) = \frac{1 - \rho}{\lambda}$.
+
+During forward Kalman filtering, suppose we have got the BLUE (best linear unbiased estimator) of $\theta_{t-1}$ and its expected squared prediction error, $\left. \theta_{t-1} \right\vert Y^{t-1} \sim [m_{t-1}; c_{t-1}]$. Then we can derive the BLUE of $\left. \theta_{t} \right\vert Y^{t-1}$ and $\left. Y_{t} \right\vert Y^{t-1}$ as well as their expected squared prediction errors.
+\begin{align}
+	 E\left[\left. \theta_t \right\vert Y^{t-1}\right]&=E\left[ \left.E[\left. \theta_{t} \right\vert \theta_{t-1}]\right\vert Y^{t-1} \right] \nonumber \\ 
+	&= E\left[\left. \rho\theta_{t-1}+1-\rho\right\vert Y^{t-1} \right] \nonumber\\ 
+	&=\rho m_{t-1} + 1 - \rho 	
+\end{align}
+\begin{align}
+	H_t \stackrel{\text{def}}{=} \text{Var}\left(\left. \theta_t\right\vert Y^{t-1} \right) &= E\left[\left. \text{Var}\left(\left.\theta_t\right\vert \theta_{t-1} \right) \right\vert Y^{t-1} \right] + \text{Var}\left( \left.   E\left[\left. \theta_{t} \right\vert \theta_{t-1} \right]\right\vert Y^{t-1} \right) \nonumber \\
+	&= E\left[ \left. \theta_{t-1}^2\cdot \frac{\rho(1-\rho)}{\lambda + 1} + \frac{1-\rho}{\lambda} \right\vert Y^{t-1} \right] +\text{Var}\left( \left. \rho \cdot \theta_{t-1}+1-\rho \right\vert Y^{t-1} \right) \nonumber \\
+	&= \frac{1-\rho^2}{\lambda} + \rho^2 \cdot c_{t-1}
+\end{align}
+\begin{align}
+	f_{t} \stackrel{\text{def}}{=} E\left[\left. Y_{t} \right\vert Y^{t-1} \right] &= E\left[ \left. E\left[ \left. Y_{t} \right\vert \theta_{t} \right] \right\vert Y^{t-1} \right] \nonumber \\
+	&= a_{t}(\rho m_{t-1}+1-\rho)
+\end{align}
+\begin{align}
+	Q_{t} \stackrel{\text{def}}{=} \text{Var}\left(\left.Y_{t}\right\vert Y^{t-1} \right)&= E\left[\text{Var}\left( \left.Y_{t}\right\vert \theta_t \right) \right] + \text{Var}\left(\left. E\left[ \left.Y_{t}\right\vert\theta_t \right] \right\vert Y^{t-1} \right)\nonumber \\
+	& = a_{t} + a_{t}^2 \left( \frac{1-\rho^2}{\lambda}+\rho^2 c_{t-1} \right)
+\end{align}
+
+
+If I denote $u_{t} = H_{t+1} = \frac{1-\rho^2}{\lambda}+\rho^2 c_{t}$, then plug in the fact that $E[B_{t+1}] = \rho$ and $E[b_{t+1}] = \bar{\rho} \stackrel{\text{def}}{=} 1-\rho$, we have
+\begin{align}
+	c_{t} \stackrel{\text{def}}{=} \text{Var}\left(\left. \theta_{t} \right\vert Y^{t} \right) &= H_t - H_t^{\top} A_{t}^{\top} Q_{t}^{-1} A_{t} H_t \nonumber\\
+	&= u_{t-1} - \frac{a_{t}^2 u_{t-1}^2}{a_{t} + a_{t}^2 u_{t-1}} \nonumber\\
+	&=\frac{u_{t-1}}{1+a_{t}u_{t-1}}
+\end{align}
+\begin{align}
+	m_{t} \stackrel{\text{def}}{=} E\left[ \left. \theta_{t} \right\vert Y^{t} \right] &= B_{t}m_{t-1}+b_{t}+H_{t}^{\top}A_{t}^{\top}Q_{t}^{-1}(Y_{t}-f_{t})\nonumber \\
+	&= \rho m_{t-1} + \bar{\rho} + \frac{a_{t}u_{t-1}}{a_{t}+a_{t}^2 u_{t-1}} (Y_{t} - f_{t})\nonumber \\
+	&= \rho m_{t-1} + \bar{\rho}  + c_{t}(Y_{t} - f_{t})
+\end{align}
+
+The Kalman smoother given in page 26 of lecture note 3 tells us that 
+\begin{align}
+	m_{t}^{*} &= m_{t} + c_{t}B_{t+1}^{\top} H_{t+1}^{-1}(m_{t+1}^{*} - B_{t+1}m_{t} - b_{t+1}) 
+\end{align}
+Replacing the value of $B_{t+1}$ and $H_{t+1}$, and we have
+\begin{align}
+	m_{t}^{*}= m_{t} + \frac{\rho c_{t}}{u_{t}}(m_{t+1}^{*} - B_{t+1}m_{t} - b_{t+1})
+\end{align}
+This is the result that question (a) asks about.
+
+\item According to page 26 of lecture note 3, the mean square prediction error of Kalman smoother is
+\begin{align}
+	c_{t}^{*} = c_{t} - c_{t}B_{t+1}^{\top} H_{t+1}^{-1} B_{t+1} c_{t} + c_{t}B_{t+1}^{\top} H_{t+1}^{-1} c_{t+1}^{*} H_{t+1}^{-1} B_{t+1} c_{t}
+\end{align}
+
+Replacing $B_{t+1}$ with $\rho$ and $H_{t+1}$ with $u_{t}$, we have
+\begin{align}
+	c_{t}^{*} &= c_{t} - \frac{\rho^2}{u_{t}}c_{t}^2 + \left( \frac{\rho c_{t}}{u_{t}} \right)^2 c_{t+1}^{*}\nonumber \\
+	&= c_{t}\cdot \frac{u_{t} - \rho^2 c_{t}}{u_{t}} + \left( \frac{\rho c_{t}}{u_{t}} \right)^2 c_{t+1}^{*}\nonumber \\
+	&= c_{t}\cdot \frac{1-\rho^2}{\lambda u_{t}} + \left( \frac{\rho c_{t}}{u_{t}} \right)^2 c_{t+1}^{*}
+\end{align}
+This is the result that question (b) asks about.
+
+\end{enumerate}
+
+
+
+\section*{Problem 2}
+
+\begin{enumerate}[(a)]
+	\item Following the instructions that $a_t = \exp(5-0.5\sin(t/6\pi))$, $\lambda=1$ and $\rho=0.6$, I get the simulated trajectory of $\theta_t$, $a_t$ and $Y_t$ in Figure \ref{P2simulation}.
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[scale=0.7]{P2simulation.pdf}
+		\caption{Simulated data for Problem 2}\label{P2simulation}
+	\end{figure}
+	\item The program is based on the algorithm depicted in pseudocode \ref{KM}.
+	\begin{algorithm}[htbp]
+	\caption{Kalman Filter and Smoother for Latent Variable of Poisson-Gamma Process with Mean 1}\label{KM}
+	\hspace*{\algorithmicindent} \textbf{Input} Number of time points $N$,  Observed count series  $\bm{Y}$, External coefficient series $\bm{a}$, gamma process dispersion parameter $\lambda$, autocorrelation coefficient $\rho$
+	
+	\begin{algorithmic}[1]
+	 	\State $m_{0} \gets 1$ \Comment{The initial state is assumed to be degenerated at mean}
+	 	\State $C_0 \gets 0$
+	 	\State $f_1 \gets \rho a_1  m_0 + (1-\rho)a_1$ \Comment{Predicted Mean}
+	 	\State $u_1 \gets \rho^2 C_0 + (1-\rho^2)/\lambda$
+		\State $Q_1 \gets a_{1}^2u_{1} + a_{1}$
+		\State $C_1 \gets \frac{u_1}{1+a_1u_1}$ \Comment{Predicted Variance}
+		\State $m_1 \gets \rho m_0 +1-\rho+C_1(Y_1-f_1)$
+		\For{$n \gets 2$ to $N$} \Comment{Kalman Filter}
+		\State $f_n \gets \rho a_n  m_{n-1} + (1-\rho)a_n$ 
+	 	\State $u_n \gets \rho^2 C_{n-1} + (1-\rho^2)/\lambda$
+		\State $Q_n \gets a_{n}^2u_{n} + a_{n}$
+		\State $C_n \gets \frac{u_n}{1+a_nu_n}$
+		\State $m_n \gets \rho m_{n-1} +1-\rho+C_n(Y_n-f_n)$
+		\EndFor
+		\State $m'_{N} \gets m_{N}$ \Comment{Kalman Smoother}
+		\State $C'_{N} \gets C_{N}$
+		\For{$n \gets N-1$ to $1$}
+			\State $u_n \gets C_n\rho^2+(1-\rho^2)/\lambda$
+			\State $m'_{n} \gets m_{n}+\rho C_n(m'_{n+1}-\rho m_{n} -1+\rho)/u_{n}$
+			\State $C_{n}' \gets (1-\rho^2)C_{n}/(u_{n}\lambda) + \rho^2 C_{n}^2C_{n+1}'/u_{n}^2$
+		\EndFor
+	\end{algorithmic}
+	
+	\hspace*{\algorithmicindent} \textbf{Output} Kalman Filter Mean $\bm{m}$, Kalman Filter Variance $\bm{C}$, Kalman Smoother Mean $\bm{m}'$, Kalman Smoother Variance $\bm{C}'$
+\end{algorithm}
+	
+	\item The Kalman filter, Kalman smoother and the true $\bm{\theta}$ time series values are plotted in Figure \ref{P2result}. The mean square error of Kalman filter is $9.78\times 10^{-3}$ and the mean square error of Kalman smoother is $9.78\times 10^{-3}$ as well. Both of them have excellent performance because we feed the true parameters of gamma distribution dispersion parameter $\gamma$, autocorrelation parameter $\rho$ and external time trend coefficients $\bm{a}$ into the algorithm.
+	
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[scale=0.7]{HW3P2.pdf}
+		\caption{The Kalman filter, Kalman smoother and true $\bm{\theta}$ time series values in problem 2.}\label{P2result}
+	\end{figure}
+	
+\end{enumerate}
+
+
+	
+\newpage
+
+\section*{Problem 3}
+
+\begin{enumerate}[(a)]
+	\item We have got 132 weeks (2020/3/14 to 2022/9/17) of death counts and vaccination rates for two Michigan population age groups (18-64 and 65+). In this problem, we assume that the observed counts $Y_{kt}$ of population group $k$ at week $t$ follows a Poisson-Gamma process. $k=0,1$ represents age group 18-64 and 65+ accordingly. $t=0,1,\cdots 131$ denote the weeks as consecutive integers. Namely $Y_{kt} \sim \text{Poisson}(a_{kt}\theta_{kt})$. $\{\theta_{0t}\}_{t=0,1,\cdots 131}$ and $\{\theta_{1t}\}_{t=0,1,\cdots 131}$ are two independent time series following the gamma process formulated in previous two questions. We assume that $\rho = 0.5$. $\{a_{kt}\}$ and the gamma distribution dispersion parameter $\lambda$ are estimated by fitting a negative binomial regression for $\{Y_{kt}\}$. The negative binomial regression is formulated as 
+	\begin{align*}
+		\log(\frac{\mathbb{E}[Y_{kt}]}{N_{k}}) &= \beta_{0} + \beta_{1}k +(\gamma_{0} + \gamma_{1}k) v_{kt} +\\ 
+		&\quad \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t \geq 41) + \alpha_{2}\mathbb{I}(t \geq 69) +\alpha_{3} \mathbb{I}(t \geq 91) + \alpha_{4}\mathbb{I}(t \geq 116)\right) t
+	\end{align*}	
+	$v_{kt}$ stands for the vaccination rate of age group $k$ at week $t$. The effect size of time trend is a "broken line" with four time knots. The first time knot is set at December 14, 2020(availability of vaccines to the general public, week 41). The second time knot is set at June 26, 2021(the time when the percent of infection by the delta variant exceeded 50\% of the US population, week 69). The third time knot is set at Nov 29, 2021(the time when the omicron variant began to spread in South Africa, week 91). The fourth time knot is set at May 22, 2022(when the omicron became dominant in the USA, 116). $\{a_{kt}\}$ is calculated with all the estimated $\beta$s, $\gamma$s and $\alpha$s in the model. The dispersion parameter estimated in the negative binomial model is considered to be equivalent to $\lambda$ in the Poisson-gamma process. After collecting observed death counts $\{Y_{kt}\}$, time trend coefficient $\{a_{kt}\}$ and gamma process parameters $\lambda$ and $\rho$, we are able to execute the Kalman filter and smoother algorithm in pseudocode \ref{KM} to estimate the latent time series of $\{\theta_{kt} \}$. The result for 18-64 age group is depicted in Figure \ref{P3a}A and the result for 65+ age group is depicted in Figure \ref{P3a}B. The Kalman filter and smoother generates almost identical trajectories for both age groups.	
+	
+	\item I simulated AR(1) process based on the Kalman smoother estimate of $\theta$ at the week of 2022/9/17. Then I draw from the Poisson distribution as the predicted death counts. The predicted latent process and observed death counts are depicted in Figure \ref{P3B}. 65+ age group has consistently higher death counts prediction than 18-64 age group.
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[scale=0.65]{HW3P3a.pdf}
+		\caption{Kalman filter and smoother for latent process $\{\theta_{t}\}$ of 18-64 age group(A) and 65+ age group(B)}\label{P3a}
+		\includegraphics[scale=0.7]{P3b.pdf}
+		\caption{Predicted latent process and death counts of both 18-64 and 65+ age group in the four weeks after 2022/9/17. 2022/9/17(triangle dot) is the last week with known death counts.}\label{P3B}
+	\end{figure}
+\end{enumerate}
+	
+
+
+
+
+\end{document}

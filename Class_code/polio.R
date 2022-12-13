@@ -1,0 +1,233 @@
+######################Polio data analysis#################################
+#Stationary model fits stationary data in a simulation study, May,97
+#########################################################################
+
+polio.dat <- c(scan("Class_code/polio.dat"))
+Y <- polio.dat # observed polio counts
+N <- length(Y)       ## N=168
+TT <- c(1:N)         ## trend
+S0 <- rep(1,N)       ## constant
+S1 <- cos(2*pi*TT/12)  ## seasonality
+S2  <- sin(2*pi*TT/12) ## seasonality
+S3 <- cos(2*pi*TT/6)   ## seasonality
+S4 <- sin(2*pi*TT/6)   ## seasonality
+X <- cbind(S0, TT, S1,S2,S3,S4)  ## covariates
+k <- dim(X)[2]  #k=6
+
+###################Initializations################################
+##(1) sigamsq, (2) pi, (3) beta  (4) alpha
+##To initialize beta by using glm, the covariates have to be
+##specified individually.
+####################################################################
+
+#######################################################################
+##Moving average to treat initial smoother in terms of periods 6 and 12.
+#######################################################################
+m <- rep(1,N)
+for(j in 4:(N-3)){
+  m[j] <- (0.5*Y[j-3] + Y[j-2] +Y[j-1] +Y[j] + Y[j+1] + Y[j+2] +0.5*Y[j+3])/6
+}
+for(j in (N-2):N){
+  m[j] <- (Y[N-2] + Y[N-1] + Y[N])/3
+}
+mm <- m
+for(j in 7:(N-6)){
+  m[j] <- (0.5*mm[j-6] + mm[j-5] + mm[j-4] + mm[j-3] + mm[j-2] + mm[j-1] + mm[j] +
+             mm[j+1] + mm[j+2] + mm[j+3] + mm[j+4] + mm[j+5] + 0.5 * mm[j+6])/12
+}
+for(j in (N-5):N){
+  m[j] <- (mm[N-5] + mm[N-4] + mm[N-3] + mm[N-2] + mm[N-1] + mm[N])/6
+}
+mm <- 0  #no longer of interest.
+
+#cat("moving average is done\n")
+
+m0 <- 1
+##################Initialization of sigmasq#############
+sigmasq <- var(m)
+
+###########################################################
+#####GLIM to initialize beta, assuming independence########
+############################################################
+data.poisson <- data.frame(Y,X)
+Glm.poisson <- glm(Y ~ -1 + S0  + TT + S1 + S2 + S3 + S4, poisson, data.poisson)
+beta<- as.numeric(coef(Glm.poisson))
+
+a <- as.vector(exp( X %*% beta ))  #size = 168, time-dependent rate
+
+bet <- c(beta)
+#########################################################
+#####Initialize alpha, the correlation #################
+########################################################
+#rhoy <- acf(Y,1,"correlation")$acf[2, ,1]
+#o1 <- (sigmasq * a[1:(N-1)])^{-1} + 1
+#o2 <- (sigmasq * a[2:N])^{-1}+ 1
+#alpha <- rhoy * mean(sqrt(o1 * o2))
+#o1 <- 0  #release
+#o2 <- 0  #release
+alpha <-acf(m,1,"correlation",plot=F)$acf[2, ,1]
+
+###############################################################
+##############Initializations needed for Kalman filter#########
+f <- Y
+C <- rep(0, N)
+DmBeta <- matrix(0, N,  k)
+S <- matrix(0,  k,  k )
+
+epsilon <- 1
+it.no <- 0
+
+while(epsilon > .00001 && it.no < 500){
+  it.no <- it.no + 1
+  cat("The number of iteration =", it.no, "@", date(), "\n")
+  C0 <- 0
+  Q <- c(rep(0,N))
+
+  ###########################################################
+  #########kalman filter: forward calculations###############
+  ###########################################################
+
+  ############### initializations ##########################
+
+  f[1] <- alpha * a[1] * m0 + (1 - alpha) * a[1]
+  u <- alpha^2 * C0 + (1 - alpha^2) * sigmasq  ##u is u_0
+  Q[1] <- a[1] * a[1] * u + a[1]
+  C[1] <- u/(1 + a[1] * u)
+  m[1] <- alpha*m0 + 1 - alpha + C[1]*(Y[1] - f[1])
+
+  DmBeta[1,] <- - a[1] * C[1] * X[1,]
+
+  S <- S - a[1] * outer(X[1,], X[1,] + DmBeta[1,])
+
+  ################## recursion ##############################
+
+  for(n in 2:N){
+    f[n] <-  alpha * a[n] * m[n-1] + (1 - alpha) * a[n]
+    u <- alpha^2 * C[n - 1] + (1 - alpha^2) * sigmasq
+    ### u is u[n-1]
+    Q[n] <- a[n] * a[n] * u  +  a[n]
+    C[n] <- u / (1 + a[n] * u)
+    m[n] <- alpha * m[n-1] + 1 - alpha + C[n] * (Y[n] - f[n])
+    DmBeta[n, ] <- alpha*(1- a[n]*C[n])*DmBeta[n-1, ] - a[n]*C[n]*X[n,]
+    S <- S - a[n] * outer(X[n, ], X[n, ] + DmBeta[n, ])
+  }
+
+  ##############################################################
+  #############kalman smoother: backward calculations###########
+  ##############################################################
+
+  ############## initializations ###############################
+
+  ms0 <- m0 #note that C0 = 0 from smoother formula of ms
+  ms <- m
+  Cs <- C
+  DmsBeta <- DmBeta
+
+  ############### recursion ###################################
+
+  for(n in (N - 1):1){
+    u <-  C[n] * alpha^2 + (1 - alpha^2) * sigmasq
+    ms[n] <- m[n] + alpha * C[n] * (ms[n + 1] - alpha * m[n] - 1 + alpha)/u
+    Cs[n] <- (1 - alpha^2) * C[n] * sigmasq/u + (alpha^2)*C[n]^2 * Cs[n + 1]/u^2
+    DmsBeta[n, ] <- DmBeta[n, ] + alpha * C[n] * (DmsBeta[n + 1, ] - alpha * DmBeta[n, ])/u
+    S <-  S - a[n + 1] * outer(X[n + 1, ], X[n + 1, ] + DmsBeta[n + 1, ])
+  }
+  S <- S - a[1] * outer(X[1,], X[1,] + DmsBeta[1, ])
+
+  #cat("solving S ... ")
+
+  ################################################################
+  ###################Newton Scoring algorithm#####################
+  ################################################################
+
+  #####Using Kalman smoother to approximate the latent process.###
+  psi <- as.vector(t(X) %*% as.matrix(Y - a * ms))
+
+  beta <- beta - solve(S, psi)
+
+  a <- as.vector(exp( X %*% as.matrix(beta) ))
+
+  cat("max(abs(psi)) =", max(abs(psi)), "\n")
+
+  dif <- beta - bet
+  cat("max(abs(dif)) =", max(abs(dif)), "\n")
+
+  epsilon <- max(abs(dif))  #compatible with the second criterion.
+  bet <- beta
+
+  ##############################################################
+  #######################Estimate sigmasq########################
+  ###############################################################
+  #########sigmasq is estimated based on momont##################.
+
+  sigmasq <- sum((Y - a)^2 - a)/sum(a^2)
+
+  cat("sigmasq =", sigmasq, "\n")
+
+  ###############################################################
+  #######################Estimate alpha##########################
+  ###############################################################
+  ###the first version for alpha estimation#####don't work#######
+  #o1 <- (sigmasq * a[1:(N-1)])^{-1} + 1
+  #o2 <- (sigmasq * a[2:N])^{-1}+ 1
+  #alpha <- rhoy * mean(sqrt(o1 * o2))
+
+  ######the second version of alpha estimation###################
+  #adjust <-
+  #      alpha * C[1:(N-1)]*Cs[2:N]/(C[1:(N-1)] * alpha^2 - (1 - alpha^2)*sigmasq)
+  #alpha <- (mean((ms[1:(N-1)]-1)*(ms[2:N]-1)) + mean(adjust))/sigmasq
+
+  ######the third version for alpha estimation##################
+  #u <- alpha * C + (1 - alpha^2)*sigmasq
+  #alpha <- mean((ms[1:(N-1)]-1)*(ms[2:N]-1)/(sigmasq - C[1:(N-1)]*Cs[2:N]/u[1:(N-1)]))
+  alpha <-acf(m,1,"correlation",plot=F)$acf[2, ,1]
+  cat("alpha =", alpha, "\n")
+}
+#return(beta,C,Cs,f,m,ms,Q,S,sigmasq,alpha)
+#}
+#18 seconds for 209 iterations.
+
+
+ZGODA <- function(){
+  beta <- RESOUT$beta
+  a <- as.vector(exp( X %*% as.matrix(beta) ))
+  Cs <- RESOUT$Cs
+  C <- RESOUT$C
+  f <- RESOUT$f
+  m <- RESOUT$m
+  #       m0<-1
+  #       Q <- RESOUT$Q
+  S <- RESOUT$S
+  sigmasq<-RESOUT$sigmasq
+  alpha <- RESOUT$alpha
+
+  ######################C^* matrix ############################
+  Cstar <- diag(Cs)
+  for(n in 1:(N-1)) {
+    for(h in 0:(N-n-1)){
+      Cstar[n,n+h+1] <-
+        alpha * C[n+h]*Cs[n+h+1]*Cstar[n,n+h]/(Cs[n+h]*(alpha^2* C[n+h] + (1-alpha^2)* sigmasq))
+    }
+  }
+  Cstar <- Cstar + t(Cstar) - diag(diag(Cstar))
+  #cat("Cstar is done" \n)
+
+  V <- t(X) %*% diag(a) %*% X - t(X) %*% diag(a) %*% Cstar %*% diag(a) %*% X
+
+  #Godambe information matrix
+  #J <- t(S) %*% solve(V) %*% S
+  Sinv <- solve(S)
+  AV <- N^2 * Sinv %*% (V) %*% t(Sinv)
+
+  #Standard errors
+  SE <- c(sqrt(diag(AV)))
+  CORR <- diag(1/SE) %*% AV %*% diag(1/SE)
+  #t-values
+  Tvalue <- beta/SE
+
+  ######clear Cstar
+  Cstar <- 0
+  return(V, AV,SE,CORR,Tvalue)
+}
+ZGODAOUT <- ZGODA()
+
