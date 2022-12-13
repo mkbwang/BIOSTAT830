@@ -23,7 +23,7 @@ for (j in 1:100){
 
 
 result_df <- data.frame(Theta = theta_t[2:101],
-                        A_t = a_t,
+                        a_t = a_t,
                         Y = Y_t[1:100],
                     Time = seq(1, 100))
 
@@ -34,8 +34,8 @@ library(ggplot2)
 theta_plot <- ggplot(result_df, aes(x=Time, y=Theta)) + geom_point() +
   geom_line() + xlab("Time") + ylab("Theta") +theme_bw()
 
-A_plot <- ggplot(result_df, aes(x=Time, y=A_t)) + geom_point()+
-  geom_line() + xlab("Time") + ylab("A_t") + theme_bw()
+A_plot <- ggplot(result_df, aes(x=Time, y=a_t)) + geom_point()+
+  geom_line() + xlab("Time") + ylab("a_t") + theme_bw()
 
 Y_plot <- ggplot(result_df, aes(x=Time, y=Y)) + geom_point()+
   geom_line() + xlab("Time") + ylab("Y") + theme_bw()

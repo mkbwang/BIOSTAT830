@@ -73,6 +73,8 @@ lambda <- nb_knots_vaccination_age_model$theta
 
 coefficients <- nb_knots_vaccination_age_model$coefficients
 
+construct_mat <- nb_knots_vaccination_age_model$model
+
 michigan_deaths$predicted_a_t <- as.integer(nb_knots_vaccination_age_model$fitted.values)
 
 
@@ -171,5 +173,83 @@ plot_grid(younger_KMplot, older_KMplot,
           labels="AUTO")
 
 
+# predict four future weeks
+
+lastweek <- max(michigan_deaths$End.Week)
+futureweeks <- lastweek + c(7, 14, 21, 28)
+
+young_offset <- log(6.05e6)
+young_predictors <- cbind(1, construct_mat[rep(263, 5), 3:10]) %>% as.matrix()
+young_predictors[, c(2,6:9)] <- seq(131, 135)
+younger_future_a_t <- as.vector(young_predictors %*% coefficients + young_offset) %>% exp()
+
+younger_future_theta <- rep(younger_KMsmoother_df$Value[132], 5)
+younger_future_Y <- rep(Y_t_younger[132], 5)
+set.seed(2021)
+Bt <- rbeta(n=5, shape1=0.5*lambda, shape2=(1-0.5)*lambda)
+epsilon_t <- rgamma(n=5, shape=(1-0.5)*lambda, scale=1/lambda)
+
+for (j in 2:5){
+  younger_future_theta[j] <- Bt[j] * younger_future_theta[j-1] + epsilon_t[j]
+  younger_future_Y[j] <- rpois(1, younger_future_theta[j] * younger_future_a_t[j])
+}
+young_prediction <- data.frame(Week = c(lastweek, futureweeks),
+                               Type = c("Old", rep("New", 4)),
+                               a_t = younger_future_a_t,
+                               theta_t = younger_future_theta,
+                               Y_t = younger_future_Y)
+
+young_theta_plot <- ggplot(young_prediction, aes(x=Week, y=theta_t))+
+  geom_point(aes(shape=Type), fill="white", size=3) + geom_line() + xlab("Week") + ylab("Theta") +
+  scale_x_continuous(breaks=young_prediction$Week) + theme_bw() +
+  theme(legend.position = "none") +scale_shape(solid = FALSE)
+
+young_Y_plot <- ggplot(young_prediction, aes(x=Week, y=Y_t))+
+  geom_point(aes(shape=Type), fill="white", size=3) + geom_line() + xlab("Week") + ylab("Y") +
+  scale_x_continuous(breaks=young_prediction$Week) + theme_bw() +
+  theme(legend.position = "none") +scale_shape(solid = FALSE)
 
 
+# senior population
+old_offset <- log(1.81e6)
+old_predictors <- cbind(1, construct_mat[rep(264, 5), 3:10]) %>% as.matrix()
+old_predictors[, c(2,6:9)] <- seq(131, 135)
+old_future_a_t <- as.vector(old_predictors %*% coefficients + old_offset) %>% exp()
+
+old_future_theta <- rep(older_KMsmoother_df$Value[132], 5)
+old_future_Y <- rep(Y_t_older[132], 5)
+set.seed(2020)
+Bt <- rbeta(n=5, shape1=0.5*lambda, shape2=(1-0.5)*lambda)
+epsilon_t <- rgamma(n=5, shape=(1-0.5)*lambda, scale=1/lambda)
+
+for (j in 2:5){
+  old_future_theta[j] <- Bt[j] * old_future_theta[j-1] + epsilon_t[j]
+  old_future_Y[j] <- rpois(1, old_future_theta[j] * old_future_a_t[j])
+}
+old_prediction <- data.frame(Week = c(lastweek, futureweeks),
+                               Type = c("Old", rep("New", 4)),
+                               a_t = old_future_a_t,
+                               theta_t = old_future_theta,
+                               Y_t = old_future_Y)
+
+young_prediction$Agegroup <- "18-64"
+old_prediction$Agegroup <- "65+"
+
+combined_prediction <- rbind(young_prediction, old_prediction)
+
+theta_predicton_plot <- ggplot(combined_prediction, aes(x=Week, y=theta_t))+
+  geom_point(aes(shape=Type), fill="white", size=3) + geom_line() +
+  xlab("Week") + ylab("Theta") + facet_wrap(~Agegroup) +
+  scale_x_continuous(breaks=young_prediction$Week, labels=format(young_prediction$Week, format="%m-%d")) + theme_bw() +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 90)) +scale_shape(solid = FALSE)
+
+
+Y_predicton_plot <- ggplot(combined_prediction, aes(x=Week, y=Y_t))+
+  geom_point(aes(shape=Type), fill="white", size=3) + geom_line() +
+  xlab("Week") + ylab("Y") + facet_wrap(~Agegroup) +
+  scale_x_continuous(breaks=young_prediction$Week, labels=format(young_prediction$Week, format="%m-%d")) + theme_bw() +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 90)) +scale_shape(solid = FALSE)
+
+combined_prediction_plot <- plot_grid(theta_predicton_plot,
+                                      Y_predicton_plot,
+                                      labels="AUTO",nrow=2)

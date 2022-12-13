@@ -141,14 +141,77 @@ This is the result that question (b) asks about.
 
 \section*{Problem 2}
 
+\begin{enumerate}[(a)]
+	\item Following the instructions that $a_t = \exp(5-0.5\sin(t/6\pi))$, $\lambda=1$ and $\rho=0.6$, I get the simulated trajectory of $\theta_t$, $a_t$ and $Y_t$ in Figure \ref{P2simulation}.
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[scale=0.7]{P2simulation.pdf}
+		\caption{Simulated data for Problem 2}\label{P2simulation}
+	\end{figure}
+	\item The program is based on the algorithm depicted in pseudocode \ref{KM}.
+	\begin{algorithm}[htbp]
+	\caption{Kalman Filter and Smoother for Latent Variable of Poisson-Gamma Process with Mean 1}\label{KM}
+	\hspace*{\algorithmicindent} \textbf{Input} Number of time points $N$,  Observed count series  $\bm{Y}$, External coefficient series $\bm{a}$, gamma process dispersion parameter $\lambda$, autocorrelation coefficient $\rho$
+	
+	\begin{algorithmic}[1]
+	 	\State $m_{0} \gets 1$ \Comment{The initial state is assumed to be degenerated at mean}
+	 	\State $C_0 \gets 0$
+	 	\State $f_1 \gets \rho a_1  m_0 + (1-\rho)a_1$ \Comment{Predicted Mean}
+	 	\State $u_1 \gets \rho^2 C_0 + (1-\rho^2)/\lambda$
+		\State $Q_1 \gets a_{1}^2u_{1} + a_{1}$
+		\State $C_1 \gets \frac{u_1}{1+a_1u_1}$ \Comment{Predicted Variance}
+		\State $m_1 \gets \rho m_0 +1-\rho+C_1(Y_1-f_1)$
+		\For{$n \gets 2$ to $N$} \Comment{Kalman Filter}
+		\State $f_n \gets \rho a_n  m_{n-1} + (1-\rho)a_n$ 
+	 	\State $u_n \gets \rho^2 C_{n-1} + (1-\rho^2)/\lambda$
+		\State $Q_n \gets a_{n}^2u_{n} + a_{n}$
+		\State $C_n \gets \frac{u_n}{1+a_nu_n}$
+		\State $m_n \gets \rho m_{n-1} +1-\rho+C_n(Y_n-f_n)$
+		\EndFor
+		\State $m'_{N} \gets m_{N}$ \Comment{Kalman Smoother}
+		\State $C'_{N} \gets C_{N}$
+		\For{$n \gets N-1$ to $1$}
+			\State $u_n \gets C_n\rho^2+(1-\rho^2)/\lambda$
+			\State $m'_{n} \gets m_{n}+\rho C_n(m'_{n+1}-\rho m_{n} -1+\rho)/u_{n}$
+			\State $C_{n}' \gets (1-\rho^2)C_{n}/(u_{n}\lambda) + \rho^2 C_{n}^2C_{n+1}'/u_{n}^2$
+		\EndFor
+	\end{algorithmic}
+	
+	\hspace*{\algorithmicindent} \textbf{Output} Kalman Filter Mean $\bm{m}$, Kalman Filter Variance $\bm{C}$, Kalman Smoother Mean $\bm{m}'$, Kalman Smoother Variance $\bm{C}'$
+\end{algorithm}
+	
+	\item The Kalman filter, Kalman smoother and the true $\bm{\theta}$ time series values are plotted in Figure \ref{P2result}. The mean square error of Kalman filter is $9.78\times 10^{-3}$ and the mean square error of Kalman smoother is $9.78\times 10^{-3}$ as well. Both of them have excellent performance because we feed the true parameters of gamma distribution dispersion parameter $\gamma$, autocorrelation parameter $\rho$ and external time trend coefficients $\bm{a}$ into the algorithm.
+	
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[scale=0.7]{HW3P2.pdf}
+		\caption{The Kalman filter, Kalman smoother and true $\bm{\theta}$ time series values in problem 2.}\label{P2result}
+	\end{figure}
+	
+\end{enumerate}
 
 
-
+	
+\newpage
 
 \section*{Problem 3}
 
 \begin{enumerate}[(a)]
+	\item We have got 132 weeks (2020/3/14 to 2022/9/17) of death counts and vaccination rates for two Michigan population age groups (18-64 and 65+). In this problem, we assume that the observed counts $Y_{kt}$ of population group $k$ at week $t$ follows a Poisson-Gamma process. $k=0,1$ represents age group 18-64 and 65+ accordingly. $t=0,1,\cdots 131$ denote the weeks as consecutive integers. Namely $Y_{kt} \sim \text{Poisson}(a_{kt}\theta_{kt})$. $\{\theta_{0t}\}_{t=0,1,\cdots 131}$ and $\{\theta_{1t}\}_{t=0,1,\cdots 131}$ are two independent time series following the gamma process formulated in previous two questions. We assume that $\rho = 0.5$. $\{a_{kt}\}$ and the gamma distribution dispersion parameter $\lambda$ are estimated by fitting a negative binomial regression for $\{Y_{kt}\}$. The negative binomial regression is formulated as 
+	\begin{align*}
+		\log(\frac{\mathbb{E}[Y_{kt}]}{N_{k}}) &= \beta_{0} + \beta_{1}k +(\gamma_{0} + \gamma_{1}k) v_{kt} +\\ 
+		&\quad \left(\alpha_{0} + \alpha_{1}\mathbb{I}(t \geq 41) + \alpha_{2}\mathbb{I}(t \geq 69) +\alpha_{3} \mathbb{I}(t \geq 91) + \alpha_{4}\mathbb{I}(t \geq 116)\right) t
+	\end{align*}	
+	$v_{kt}$ stands for the vaccination rate of age group $k$ at week $t$. The effect size of time trend is a "broken line" with four time knots. The first time knot is set at December 14, 2020(availability of vaccines to the general public, week 41). The second time knot is set at June 26, 2021(the time when the percent of infection by the delta variant exceeded 50\% of the US population, week 69). The third time knot is set at Nov 29, 2021(the time when the omicron variant began to spread in South Africa, week 91). The fourth time knot is set at May 22, 2022(when the omicron became dominant in the USA, 116). $\{a_{kt}\}$ is calculated with all the estimated $\beta$s, $\gamma$s and $\alpha$s in the model. The dispersion parameter estimated in the negative binomial model is considered to be equivalent to $\lambda$ in the Poisson-gamma process. After collecting observed death counts $\{Y_{kt}\}$, time trend coefficient $\{a_{kt}\}$ and gamma process parameters $\lambda$ and $\rho$, we are able to execute the Kalman filter and smoother algorithm in pseudocode \ref{KM} to estimate the latent time series of $\{\theta_{kt} \}$. The result for 18-64 age group is depicted in Figure \ref{P3a}A and the result for 65+ age group is depicted in Figure \ref{P3a}B. The Kalman filter and smoother generates almost identical trajectories for both age groups.	
 	
+	\item I simulated AR(1) process based on the Kalman smoother estimate of $\theta$ at the week of 2022/9/17. Then I draw from the Poisson distribution as the predicted death counts. The predicted latent process and observed death counts are depicted in Figure \ref{P3B}. 65+ age group has consistently higher death counts prediction than 18-64 age group.
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[scale=0.65]{HW3P3a.pdf}
+		\caption{Kalman filter and smoother for latent process $\{\theta_{t}\}$ of 18-64 age group(A) and 65+ age group(B)}\label{P3a}
+		\includegraphics[scale=0.7]{P3b.pdf}
+		\caption{Predicted latent process and death counts of both 18-64 and 65+ age group in the four weeks after 2022/9/17. 2022/9/17(triangle dot) is the last week with known death counts.}\label{P3B}
+	\end{figure}
 \end{enumerate}
 	
 
