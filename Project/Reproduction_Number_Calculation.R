@@ -1,64 +1,66 @@
 
-library(dplyr)
-daily_county_counts <- readRDS(file.path('JHU_Counts', 'Daily_County_Counts.rds'))
-
-LA_county_counts <- daily_county_counts %>% filter(FIPS == 6037)
-LA_incidences <- LA_county_counts$Confirmed[2:620] - LA_county_counts$Confirmed[1:619]
-LA_smoothed_incidences <- LA_incidences
-for (j in 2:618){
-  LA_smoothed_incidences[j] <- mean(LA_incidences[(j-1):(j+1)]) %>% as.integer()
-}
-
-LA_incidence_df <- data.frame(Date=LA_county_counts$Date[3:619],
-                              I = LA_smoothed_incidences[2:618])
-
-library(ggplot2)
+library(dplyr) # data frame manipulation
+library(ggplot2) # plot
+library(pracma) # triagular moving average
+library(zoo)
+library(tigris)
 theme_set(theme_bw())
 
-incidence_plot <- ggplot(LA_incidence_df, aes(x=Date, y=I)) + geom_point() + geom_line()+
-  xlab("Date") + ylab("LA County Incidence")
+rm(list=ls())
 
 
-# library(EpiEstim)
-# data(Flu2009)
-#
-# res_parametric_si <- estimate_R(LA_incidence_df,
-#                                 method="parametric_si",
-#                                 config = make_config(list(
-#                                   mean_si = 5,
-#                                   std_si = 0.5))
-# )
+# calculate California county R_ts
+
+california_daily_incidences <- readRDS(file.path('Project', 'processed_data', 'California_Daily_Cases.rds'))
+california_daily_incidences$FIPS <- as.integer(california_daily_incidences$FIPS)
+
+# select county by FIPS number
+selected_county_FIPS <- 6067 # LA county
+start_date <- as.Date('2020-04-12')
+end_date <- as.Date('2021-11-27')
+num_weeks <- as.integer((end_date - start_date + 1) / 7)
+
+# selected_county_counts <- daily_county_counts %>% filter(FIPS == selected_county_FIPS) %>%
+#   select(FIPS, Date, Province_State, Confirmed) %>% arrange(Date)
+# tot_days <- nrow(selected_county_counts)
+
+selected_county_incidences <- california_daily_incidences %>% filter(FIPS == selected_county_FIPS) %>%
+  select(FIPS, date, area, cases) %>% arrange(date)
 
 
-# serial interval probability mass
-w_s <- rep(0, 14)
-w_s[1] <- plnorm(1.5, meanlog=1.6, sdlog=0.4)
-for (j in 2:14){
-  w_s[j] <- plnorm(j+0.5, meanlog=1.6, sdlog=0.4) -
-    plnorm(j-0.5, meanlog=1.6, sdlog=0.4)
+selected_county_incidences$I <- rollmean(selected_county_incidences$cases,
+                                                  k=7, fill=NA) %>% as.integer()
+
+selected_county_range_incidences <- selected_county_incidences %>%
+  filter(date>=start_date-14 & date<=end_date) %>% select(date, I)
+
+incidence_plot <- ggplot(selected_county_range_incidences, aes(x=date, y=I)) +
+  geom_point(size=1) + geom_line() + xlab("Date") + ylab("Daily Incidence")
+
+
+selected_county_range_incidences$lambda <- 0
+for (j in seq(15, nrow(selected_county_range_incidences))){
+  inc_vec <- selected_county_range_incidences$I[j-seq(1, 14)]
+  selected_county_range_incidences$lambda[j] <- sum(inc_vec * w_s)
 }
-w_s <- w_s * 1/(sum(w_s))
-w_s <- rev(w_s)
 
-conv_result <- convolve(LA_incidence_df$I, w_s, type='open')
-LA_incidence_df$lambda <- 0
-LA_incidence_df$lambda[15: 617] <- conv_result[14: 616]
-LA_incidence_df$R_t <- 0
 
 a_prior <- 2
 b_prior <- 3
 
-for (j in 21:617){
-  LA_incidence_df$R_t[j] <- (a_prior + sum(LA_incidence_df$I[(j-6): j]))/
-    (1/b_prior + sum(LA_incidence_df$lambda[(j-6):j]))
+R_t_df <- data.frame(Date = start_date + seq(4, 4+(num_weeks-1)*7, 7), R_t=0)
+
+for (j in seq(1, num_weeks)){
+  dates_range <- seq((j+2)*7-6, (j+2)*7)
+  R_t_df$R_t[j] <- (a_prior + sum(selected_county_range_incidences$I[dates_range]))/
+    (1/b_prior + sum(selected_county_range_incidences$lambda[dates_range]))
 }
 
-Rt_plot <- ggplot(LA_incidence_df, aes(x=Date, y=R_t)) + geom_point() + geom_line()+
+
+Rt_plot <- ggplot(R_t_df, aes(x=Date, y=R_t)) + geom_point() + geom_line()+
   xlab("Date") + ylab("LA County R_t")
 
 library(cowplot)
 plot_grid(incidence_plot, Rt_plot, nrow=2)
-mean(LA_incidence_df$R_t[161:283])
 
-plot(res_parametric_si$R$`Mean(R)`, type='l')
 
