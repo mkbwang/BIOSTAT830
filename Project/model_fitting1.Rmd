@@ -1,0 +1,124 @@
+---
+title: "Model Fitting"
+output: html_document
+date: "2022-12-17"
+---
+
+```{r setup, include=FALSE}
+library(CARBayesST)
+library(sf)
+library(tmap) #tm_shape
+library(dplyr)
+library(spdep)
+library(raster)
+library(stringr)
+library(ggplot2)
+library(maps)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+
+  
+```{r}
+setwd("/Users/sharon/Documents/bios 830/final project")
+
+```
+
+  
+```{r}
+dt <- readRDS("Combined_Data.rds")
+dt$Complete_Vax_Rate[is.na(dt$Complete_Vax_Rate)]<-0
+dt$County<-sub(dt$County, pattern = "^St\\.", replacement = "Saint")
+dt$State_County<-paste(dt$State,dt$County)
+#dt$year<-format(as.Date(dt$Date, format="%d/%m/%Y"),"%Y")
+
+dt <- dt[with(dt, order(State_County,Date)), ]
+Hmisc::describe(dt)
+
+#USING Kalman Smoothing TO IMPUTE MISSING R_t
+#dt$R_t<-with(dt,ave(R_t,State_County,FUN=imputeTS::na_kalman))
+#dt$SVI<-with(dt,ave(SVI,State_County,FUN=imputeTS::na_kalman))
+#dt$Travel_Proportion <-with(dt,ave(Travel_Proportion,State_County,FUN=imputeTS::na_kalman))
+dt$log_RT<-log(dt$R_t)
+
+
+#us_sp: Name 0 represents national boundaries, Name 1 represents state names, and Name 2 # #represents county names. 
+us_sp<-getData('GADM', country='USA', level=2)  #Get the County-level shape file for the US
+us_sp$NAME_2<-str_replace(us_sp$NAME_2, "Desoto", "DeSoto")
+us_sp$NAME_2<-str_replace(us_sp$NAME_2, "Dupage", "DuPage")
+us_sp$NAME_2<-str_replace(us_sp$NAME_2, "De Kalb", "DeKalb")
+
+
+us_sp$State_County<-paste(us_sp$NAME_1,us_sp$NAME_2)
+us_sp<-subset(us_sp,State_County %in% dt$State_County)
+class(us_sp)
+
+
+ for(i in 1:length(unique(dt$Division))) {
+        nam <- paste("Division", i, sep = "_")
+
+        assign(nam, unique(dt$State_County[dt$Division==unique(dt$Division)[i]])
+)
+ }
+
+us_sp_1<-subset(us_sp,State_County %in% Division_1)
+dt_1<-subset(dt,State_County %in% Division_1)
+dt_1 <- subset( dt_1, select = -Census2019 )
+
+
+```
+  
+  
+
+```{r}
+formula<-log_RT~AQI_PM25+TEMP+RH_DP+WIND+Metro_status+Travel_Proportion
+model1 <- lm(formula = formula,data = dt_1)
+summary(model1)
+
+
+
+```
+  
+```{r}
+#W.nb = poly2nb(us_sp_1, queen=FALSE) #contiguous neighbors for each polygon.
+
+xy1<-unique(cbind(dt_1$Long,dt_1$Lat))
+W.nb2 <-  knn2nb(knearneigh(xy1, k=5,longlat = TRUE),row.names=unique(dt_1$State_County))
+W.list = nb2listw(W.nb,style="B",zero.policy=TRUE) 
+W = nb2mat(W.nb,style="B",zero.policy=TRUE)
+W<-(W+t(W))/2 #Making KNN weights symmetric
+
+
+
+
+hist(dt_1$R_t)
+hist(log(dt_1$R_t))
+chain<-ST.CARar(formula, family="gaussian", data=dt_1,W=W, burnin = 20000, n.sample = 220000, thin=100, AR=2)
+#672.3 seconds.
+print(chain)
+
+
+
+
+summary(chain$samples)
+
+#trace plot
+ library(coda)
+beta.list<-mcmc.list(chain$samples$beta[,seq(1:4)])
+plot(beta.list)
+beta.list<-mcmc.list(chain$samples$beta[,seq(5:7)])
+plot(beta.list)
+
+
+
+
+```
+  
+  

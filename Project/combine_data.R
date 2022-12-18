@@ -1,23 +1,24 @@
 
 library(usmap)
+library(usdata)
 rm(list=ls())
 
 meteorology_data <- readRDS(file.path('Project', 'processed_data', 'Meteorology_weekly.rds'))
 colnames(meteorology_data) <- c("State", "County", "FIPS", "Date", "AQI_PM25", "TEMP",
                                 "PRESS", "RH_DP", "WIND", "Lat", "Long")
 meteorology_data <- meteorology_data %>%
-  filter(Date < as.Date('2021-12-01'))
-
-days_count <- meteorology_data %>% group_by(State, County, FIPS) %>%
-  summarise(days=n())
-days_count_subset <- days_count %>% filter(days == 87)
-included_counties <- days_count_subset$FIPS
+  filter(Date < as.Date('2021-12-01') & Date > as.Date('2020-06-01'))
+uniq_dates <- unique(meteorology_data$Date)
+weeks_count <- meteorology_data %>% group_by(State, County, FIPS) %>%
+  summarise(weeks=n())
+weeks_count_subset <- weeks_count %>% filter(weeks == length(uniq_dates))
+included_counties <- weeks_count_subset$FIPS
 
 filtered_meteorology_data <- meteorology_data %>% filter(FIPS %in% included_counties)
 
 
 
-reproduction_number <- readRDS(file.path('Project', 'processed_data', 'Weekly_R_t.rds'))
+reproduction_number <- readRDS(file.path('Project', 'processed_data', 'filtered_Weekly_R_t.rds'))
 
 
 # intersection of meteorology data and reproduction number data
@@ -30,18 +31,23 @@ colnames(vaccination_rate) <- c("Date", "FIPS", "County", "State", "Complete_Vax
 vaccination_rate$State <- abbr2state(vaccination_rate$State)
 vaccination_rate$County <- NULL
 vaccination_rate$State <- NULL
-valid_dates <- as.Date('2021-11-24') - seq(0, 7*86, 7)
+valid_dates <- as.Date('2021-11-24') - seq(0, 7*77, 7)
 vaccination_rate <- vaccination_rate %>% filter(Date %in% valid_dates) %>%
   filter(FIPS %in% combined_data$FIPS)
 
 
 combined_data <- combined_data %>% full_join(vaccination_rate, by=c("Date", "FIPS"))
+vaccination_rate_missing <- combined_data %>% group_by(FIPS) %>%
+  summarise(missvax = sum(is.na(Complete_Vax_Rate)))
+valid_FIPS_Vaccine <- vaccination_rate_missing$FIPS[vaccination_rate_missing$missvax < 78]
+combined_data <- combined_data %>% filter(FIPS %in% valid_FIPS_Vaccine)
+combined_data$Complete_Vax_Rate[is.na(combined_data$Complete_Vax_Rate)] <- 0
 
 # social vulnerability index
 SVI <- readRDS(file.path('Project', 'processed_data', 'SVI.rds'))
-colnames(SVI) <- c("FIPS", "State", "County", "SVI")
-SVI$County <- NULL
-SVI$State <- NULL
+# colnames(SVI) <- c("FIPS", "State", "County", "SVI")
+# SVI$County <- NULL
+# SVI$State <- NULL
 
 combined_data <- combined_data %>% left_join(SVI, by="FIPS")
 
@@ -58,6 +64,13 @@ metro_status <- readRDS(file.path('Project', 'processed_data', 'Population.rds')
   select(FIPS, Metro_status, Census2019)
 
 combined_data <- combined_data %>% left_join(metro_status, by='FIPS')
+
+# impute traveling proportion
+combined_data <- combined_data %>% arrange(FIPS, Date)
+missing_travel_proportion <- which(is.na(combined_data$Travel_Proportion))
+for (rowid in missing_travel_proportion){
+  combined_data$Travel_Proportion[rowid] <- mean(combined_data$Travel_Proportion[c(rowid-1, rowid+1)])
+}
 
 
 # add census subdivision label
@@ -99,5 +112,6 @@ combined_data <- cbind(states_divisions[, "Division"], combined_data)
 colnames(combined_data)[1] <- "Division"
 
 
-saveRDS(combined_data, file.path('Project', 'processed_data', 'Combined_Data.rds'))
+saveRDS(combined_data, file.path('Project', 'processed_data', 'Revised_Combined_Data.rds'))
+
 

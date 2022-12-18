@@ -30,11 +30,13 @@ county_population <- county_vaccinations %>%
 saveRDS(county_population, 'Project/processed_data/Population.rds')
 
 
-# SVI from vaccination hesitancy dataframe
-vaccine_hesitancy <- read.csv('Project/processed_data/VaccineHesitancyData.csv')
-SVI <- vaccine_hesitancy %>% select(fips, state, county, Social.Vulnerability.Index..SVI.)
-colnames(SVI)[4] <- "SVI"
-saveRDS(SVI, 'Project/processed_data/SVI.rds')
+# SVI
+SVI_sheet <- read.csv(file.path('Project', 'datasheets', 'SVI2020_US.csv'))
+
+SVI <- SVI_sheet %>% select(STCNTY, RPL_THEMES) %>% filter(RPL_THEMES >= 0)
+colnames(SVI) <- c("FIPS", "SVI")
+SVI_mean <- SVI %>% group_by(FIPS) %>% summarise(SVI = mean(SVI))
+saveRDS(SVI_mean, 'Project/processed_data/SVI.rds')
 
 
 # traveling patterns

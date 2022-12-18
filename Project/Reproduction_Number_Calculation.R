@@ -3,6 +3,7 @@ library(dplyr)# data frame manipulation
 library(ggplot2) # plot
 library(pracma) # triagular moving average
 library(zoo)
+library(usmap)
 library(tigris)
 theme_set(theme_bw())
 
@@ -49,6 +50,9 @@ reproduction_number <- foreach(j=1:nrow(unique_locations), .inorder=FALSE,
                           filter(date>=start_date-14 & date<=end_date) %>%
                           full_join(alldates, by="date") %>% arrange(date)
 
+                        # zero incidence is treated as NA
+                        selected_location_incidences$cases_avg[selected_location_incidences$cases_avg == 0] <- NA
+
                         selected_location_incidences$state <- state_name
                         selected_location_incidences$county <- location_name
                         selected_location_incidences$FIPS <- location_code
@@ -56,7 +60,13 @@ reproduction_number <- foreach(j=1:nrow(unique_locations), .inorder=FALSE,
 
                         for (j in seq(15, nrow(selected_location_incidences))){
                           inc_vec <- selected_location_incidences$cases_avg[j-seq(1, 14)]
-                          selected_location_incidences$lambda[j] <- sum(inc_vec * w_s)
+                          if (sum(is.na(inc_vec)) == 14){ # no incidence at all
+                            selected_location_incidences$lambda[j] <- NA
+                          } else{
+                            positive_days <- !is.na(inc_vec)
+                            selected_location_incidences$lambda[j] <- sum(inc_vec[positive_days]*w_s[positive_days]) /
+                              sum(w_s[positive_days])
+                          }
                         }
 
                         R_t_df <- data.frame(State = selected_location_incidences$state[1],
@@ -67,12 +77,17 @@ reproduction_number <- foreach(j=1:nrow(unique_locations), .inorder=FALSE,
 
                         for (j in seq(1, num_weeks)){
                           dates_range <- seq((j+2)*7-6, (j+2)*7)
-                          R_t_df$R_t[j] <- (a_prior + sum(selected_location_incidences$cases_avg[dates_range]))/
-                            (1/b_prior + sum(selected_location_incidences$lambda[dates_range]))
+                          week_incidence <- selected_location_incidences$cases_avg[dates_range]
+                          week_lambda <- selected_location_incidences$lambda[dates_range]
+                          usable_days <- !is.na(week_incidence) & !is.na(week_lambda)
+                          if (sum(usable_days) == 0) { # too many NAs
+                            R_t_df$R_t[j] <- NA
+                          } else{
+                            R_t_df$R_t[j] <- (a_prior -1 + sum(week_incidence[usable_days]))/
+                              (1/b_prior + sum(week_lambda[usable_days]))
+                          }
                         }
-
                         return(R_t_df)
-
                       }
 
 
@@ -99,5 +114,24 @@ temp_reproduction_number <- reproduction_number %>%
 
 new_reproduction_number <- rbind(temp_reproduction_number, NYC_Rt, Kcity_Rt) %>%
   arrange(Date, FIPS)
-
 saveRDS(new_reproduction_number, file.path('Project', 'processed_data', 'Weekly_R_t.rds'))
+
+
+# how many counties have missing R_t
+missingness <- new_reproduction_number %>% group_by(FIPS) %>%
+  summarise(missingRT = sum(is.na(R_t)))
+complete_FIPS <- missingness$FIPS[missingness$missingRT == 0]
+
+# what are the latest missing dates for each county
+missing_dates <- new_reproduction_number %>% filter(is.na(R_t)) %>%
+  group_by(FIPS) %>% summarise(latest_date = max(Date))
+almost_complete_FIPS <- missing_dates$FIPS[missing_dates$latest_date <= as.Date('2020-07-01')]
+included_FIPS <- c(complete_FIPS, almost_complete_FIPS)
+
+filtered_reproduction_number <- new_reproduction_number %>%
+  filter(FIPS %in% included_FIPS)
+
+
+saveRDS(filtered_reproduction_number, file.path('Project', 'processed_data', 'filtered_Weekly_R_t.rds'))
+
+
